@@ -222,6 +222,7 @@ export function start(ctx) {
 
   /* ---------- feuille d'information ---------- */
   let sheetReturn = null;
+  let sheetPushed = false;
   function openSheet(i, { sub = null } = {}) {
     const st = STATIONS[i];
     const panel = document.getElementById(st.id);
@@ -243,10 +244,10 @@ export function start(ctx) {
     h.tabIndex = -1;
     requestAnimationFrame(() => h.focus({ preventScroll: true }));
     if (sub) focusSub(st.id, sub);
-    const state = { sheet: st.id, pushed: true };
+    // une seule entrée d'historique par ouverture : « retour » ferme le panneau
     if (location.hash !== `#${st.id}`) {
-      if (wasOpen && history.state?.sheet) history.replaceState(state, '', `#${st.id}`);
-      else history.pushState(state, '', `#${st.id}`);
+      if (wasOpen) history.replaceState({ sheet: st.id }, '', `#${st.id}`);
+      else { history.pushState({ sheet: st.id }, '', `#${st.id}`); sheetPushed = true; }
     }
     Sound.bloop(1.2);
     chrome();
@@ -257,13 +258,14 @@ export function start(ctx) {
     sheet.setAttribute('aria-hidden', 'true');
     S.open = null;
     if (!fromPop) {
-      if (history.state?.pushed) history.back();
+      if (sheetPushed) history.back();
       else if (location.hash) history.replaceState(null, '', location.pathname + location.search);
     }
-    if (sheetReturn && document.contains(sheetReturn) && sheetReturn.offsetParent !== null) sheetReturn.focus({ preventScroll: true });
-    else canvas.focus?.();
-    sheetReturn = null;
+    sheetPushed = false;
     chrome();
+    if (sheetReturn && document.contains(sheetReturn) && sheetReturn.offsetParent !== null) sheetReturn.focus({ preventScroll: true });
+    if (sheet.contains(document.activeElement)) $('#menuBtn').focus({ preventScroll: true });
+    sheetReturn = null;
   }
   $('#sheetClose').addEventListener('click', () => closeSheet());
   addEventListener('popstate', () => {
@@ -719,7 +721,7 @@ export function start(ctx) {
     frame();
     setTimeout(() => {
       loader.classList.add('is-done');
-      if (deep > 0) { history.replaceState({ sheet: STATIONS[deep].id, pushed: false }, '', `#${STATIONS[deep].id}`); openSheet(deep); }
+      if (deep > 0) openSheet(deep);
     }, 250);
   });
 

@@ -58,7 +58,7 @@ const STATIONS = [
   {
     id: 'nageurs', label: 'Quel nageur êtes-vous ?', pin: 'Quel nageur êtes-vous ?',
     cam: [0, 1.5, -5.6], look: [0, 0.55, 0.9], camM: [0, 2.9, -9.4], lookM: [0, 0.45, 0.9],
-    dolphin: [-2.5, -1.7],
+    dolphin: [-2.2, -1.0],
     line: 'Trois plots, trois couloirs. Aquababy, Enfants, Jeunes & adultes : lequel est le vôtre ?',
   },
   {
