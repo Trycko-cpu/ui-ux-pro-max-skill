@@ -21,7 +21,18 @@ const angleDamp = (a, b, k, dt) => {
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export function start(ctx) {
-  const { STATIONS, SUBPINS, EASTER, Sound, selectTab, setProfile, closeMenu, isMenuOpen } = ctx;
+  const { STATIONS, SUBPINS, EASTER, Sound, selectTab, setProfile, closeMenu, isMenuOpen, toClassic } = ctx;
+  const ac = new AbortController();
+  const on = (target, type, fn, opts = {}) => target.addEventListener(type, fn, { ...opts, signal: ac.signal });
+  // dans un cadre (aperçu, artefact), on ne touche pas à l'historique du parent
+  const inFrame = (() => { try { return window.top !== window; } catch { return true; } })();
+  const setHash = (id, push) => {
+    try {
+      if (push && !inFrame) { history.pushState({ sheet: id }, '', `#${id}`); return true; }
+      history.replaceState(id ? { sheet: id } : null, '', id ? `#${id}` : location.pathname + location.search);
+    } catch { /* historique indisponible : on garde l'état dans la page */ }
+    return false;
+  };
   const N = STATIONS.length;
   const idxOf = (id) => STATIONS.findIndex((s) => s.id === id);
   const html = document.documentElement;
@@ -103,7 +114,7 @@ export function start(ctx) {
     sheetW = sheet.offsetWidth; sheetH = sheet.offsetHeight;
     measureMascot();
   }
-  addEventListener('resize', resize);
+  on(window, 'resize', resize);
 
   /* ---------- navigation ---------- */
   function goTo(i, { open = false, sub = null, instant = false } = {}) {
@@ -142,7 +153,7 @@ export function start(ctx) {
     snapTimer = setTimeout(snap, 140);
   }
 
-  addEventListener('wheel', (e) => {
+  on(window, 'wheel', (e) => {
     if (isMenuOpen()) return;
     if (S.open !== null && e.target.closest('.sheet')) return; // défilement natif du panneau
     e.preventDefault();
@@ -153,11 +164,11 @@ export function start(ctx) {
   }, { passive: false });
 
   let touch = null;
-  addEventListener('touchstart', (e) => {
+  on(window, 'touchstart', (e) => {
     if (isMenuOpen() || e.target.closest('.sheet, .menu, .topbar')) { touch = null; return; }
     touch = { y: e.touches[0].clientY, moved: 0 };
   }, { passive: true });
-  addEventListener('touchmove', (e) => {
+  on(window, 'touchmove', (e) => {
     if (!touch) return;
     const y = e.touches[0].clientY;
     const dy = touch.y - y;
@@ -165,9 +176,9 @@ export function start(ctx) {
     touch.moved += Math.abs(dy);
     if (touch.moved > 8) nudge(dy * 0.0045);
   }, { passive: true });
-  addEventListener('touchend', () => { touch = null; });
+  on(window, 'touchend', () => { touch = null; });
 
-  addEventListener('keydown', (e) => {
+  on(window, 'keydown', (e) => {
     if (e.key === 'Escape') {
       S.pendingOpen = null;
       if (isMenuOpen()) closeMenu();
@@ -197,7 +208,7 @@ export function start(ctx) {
   }
 
   // liens / boutons qui pilotent le bassin
-  document.addEventListener('click', (e) => {
+  on(document, 'click', (e) => {
     const go = e.target.closest('[data-go]');
     const menuItem = e.target.closest('[data-menu]');
     if (!go && !menuItem) return;
@@ -218,7 +229,7 @@ export function start(ctx) {
     }
   });
 
-  $('#skipLink, .skip-link')?.addEventListener('click', (e) => { e.preventDefault(); location.search = '?classique'; });
+  on($('.skip-link'), 'click', (e) => { e.preventDefault(); toClassic(); });
 
   /* ---------- feuille d'information ---------- */
   let sheetReturn = null;
@@ -246,8 +257,8 @@ export function start(ctx) {
     if (sub) focusSub(st.id, sub);
     // une seule entrée d'historique par ouverture : « retour » ferme le panneau
     if (location.hash !== `#${st.id}`) {
-      if (wasOpen) history.replaceState({ sheet: st.id }, '', `#${st.id}`);
-      else { history.pushState({ sheet: st.id }, '', `#${st.id}`); sheetPushed = true; }
+      const pushed = setHash(st.id, !wasOpen);
+      if (!wasOpen) sheetPushed = pushed;
     }
     Sound.bloop(1.2);
     chrome();
@@ -259,7 +270,7 @@ export function start(ctx) {
     S.open = null;
     if (!fromPop) {
       if (sheetPushed) history.back();
-      else if (location.hash) history.replaceState(null, '', location.pathname + location.search);
+      else if (location.hash) setHash('', false);
     }
     sheetPushed = false;
     chrome();
@@ -267,8 +278,8 @@ export function start(ctx) {
     if (sheet.contains(document.activeElement)) $('#menuBtn').focus({ preventScroll: true });
     sheetReturn = null;
   }
-  $('#sheetClose').addEventListener('click', () => closeSheet());
-  addEventListener('popstate', () => {
+  on($('#sheetClose'), 'click', () => closeSheet());
+  on(window, 'popstate', () => {
     const i = idxOf(location.hash.slice(1));
     if (i > 0) { openSheet(i); goTo(i); } else closeSheet({ fromPop: true });
   });
@@ -276,14 +287,14 @@ export function start(ctx) {
   {
     let y0 = null;
     const bar = $('.sheet-bar', sheet);
-    bar.addEventListener('touchstart', (e) => { y0 = e.touches[0].clientY; }, { passive: true });
-    bar.addEventListener('touchmove', (e) => {
+    on(bar, 'touchstart', (e) => { y0 = e.touches[0].clientY; }, { passive: true });
+    on(bar, 'touchmove', (e) => {
       if (y0 === null) return;
       const dy = Math.max(0, e.touches[0].clientY - y0);
       sheet.style.transform = `translateY(${dy}px)`;
       sheet.style.transition = 'none';
     }, { passive: true });
-    bar.addEventListener('touchend', (e) => {
+    on(bar, 'touchend', (e) => {
       if (y0 === null) return;
       const dy = e.changedTouches[0].clientY - y0;
       sheet.style.transform = ''; sheet.style.transition = '';
@@ -306,7 +317,7 @@ export function start(ctx) {
   /* ---------- rail de progression ---------- */
   rail.innerHTML = STATIONS.map((s, i) => `<button class="rail-item" type="button" data-rail="${i}" aria-label="${esc(s.pin || s.label)}"><span class="rail-label">${esc(s.label)}</span><span class="rail-bead"></span></button>`).join('');
   const railItems = [...rail.children];
-  rail.addEventListener('click', (e) => {
+  on(rail, 'click', (e) => {
     const b = e.target.closest('[data-rail]');
     if (!b) return;
     closeSheet();
@@ -322,9 +333,9 @@ export function start(ctx) {
     b.innerHTML = `<span class="pin-dot">${esc(p.num)}</span><span class="pin-text">${esc(p.text)}</span>`;
     b.setAttribute('aria-label', p.isSub ? `${p.text}, ${STATIONS[p.station].label}` : p.text);
     b.tabIndex = -1;
-    b.addEventListener('click', () => activate(p.station, p.sub));
-    b.addEventListener('mouseenter', () => { hoverKey = p; });
-    b.addEventListener('mouseleave', () => { if (hoverKey === p) hoverKey = null; });
+    on(b, 'click', () => activate(p.station, p.sub));
+    on(b, 'mouseenter', () => { hoverKey = p; });
+    on(b, 'mouseleave', () => { if (hoverKey === p) hoverKey = null; });
     pinsEl.append(b);
     pins.push({ ...p, el: b, vis: null });
   }
@@ -367,12 +378,12 @@ export function start(ctx) {
     $('#prevBtn').disabled = i === 0;
     $('#nextBtn').disabled = i === N - 1;
   }
-  mascotOpen.addEventListener('click', () => {
+  on(mascotOpen, 'click', () => {
     const i = Math.round(S.cur);
     if (i === 0) goTo(1); else goTo(i, { open: true });
   });
-  $('#prevBtn').addEventListener('click', () => goTo(Math.round(S.target) - 1));
-  $('#nextBtn').addEventListener('click', () => goTo(Math.round(S.target) + 1));
+  on($('#prevBtn'), 'click', () => goTo(Math.round(S.target) - 1));
+  on($('#nextBtn'), 'click', () => goTo(Math.round(S.target) + 1));
   let mascotTimer = 0;
 
   /* ---------- dauphin ---------- */
@@ -457,7 +468,7 @@ export function start(ctx) {
   let hovered = null;
   let pointer = null;
   let pickQueued = false;
-  canvas.addEventListener('pointermove', (e) => {
+  on(canvas, 'pointermove', (e) => {
     S.px = (e.clientX / W) * 2 - 1;
     S.py = -((e.clientY / H) * 2 - 1);
     if (!finePointer || pickQueued) return;
@@ -469,9 +480,9 @@ export function start(ctx) {
       canvas.style.cursor = hovered ? 'pointer' : '';
     });
   });
-  canvas.addEventListener('pointerleave', () => { hovered = null; canvas.style.cursor = ''; S.px = 0; S.py = 0; });
-  canvas.addEventListener('pointerdown', (e) => { pointer = { x: e.clientX, y: e.clientY, t: performance.now() }; });
-  canvas.addEventListener('pointerup', (e) => {
+  on(canvas, 'pointerleave', () => { hovered = null; canvas.style.cursor = ''; S.px = 0; S.py = 0; });
+  on(canvas, 'pointerdown', (e) => { pointer = { x: e.clientX, y: e.clientY, t: performance.now() }; });
+  on(canvas, 'pointerup', (e) => {
     if (!pointer) return;
     const moved = Math.hypot(e.clientX - pointer.x, e.clientY - pointer.y);
     const quick = performance.now() - pointer.t < 700;
@@ -693,7 +704,7 @@ export function start(ctx) {
     renderer.render(scene, camera);
     updatePins();
   }
-  document.addEventListener('visibilitychange', () => {
+  on(document, 'visibilitychange', () => {
     if (document.hidden) { cancelAnimationFrame(raf); raf = 0; }
     else if (!raf) { clock.getDelta(); frame(); }
   });
@@ -725,5 +736,25 @@ export function start(ctx) {
     }, 250);
   });
 
-  return { chrome, goTo };
+  function destroy() {
+    ac.abort();
+    cancelAnimationFrame(raf); raf = -1;
+    clearTimeout(snapTimer); clearTimeout(mascotTimer); clearInterval(typeTimer);
+    world.stop();
+    renderer.dispose();
+    renderer.forceContextLoss();
+    panels.forEach((p) => p.classList.remove('is-active'));
+    sheet.classList.remove('is-open');
+    ['role', 'aria-modal', 'aria-hidden', 'aria-labelledby'].forEach((a) => sheet.removeAttribute(a));
+    sheet.style.transform = '';
+    pinsEl.innerHTML = '';
+    rail.innerHTML = '';
+    hero.classList.remove('is-hidden', 'is-intro');
+    hero.inert = false;
+    mascot.classList.add('is-hidden');
+    scrollHint.classList.add('is-hidden');
+    if (location.hash) setHash('', false);
+  }
+
+  return { chrome, goTo, destroy };
 }

@@ -258,8 +258,27 @@ menu.addEventListener('click', (e) => { if (e.target === menu) closeMenu(); });
 const classicBtn = $('#classicBtn');
 if (html.classList.contains('classic')) classicBtn.textContent = 'Version 3D';
 classicBtn.addEventListener('click', () => {
-  location.search = html.classList.contains('classic') ? '' : '?classique';
+  closeMenu();
+  if (html.classList.contains('classic')) to3D(); else toClassic();
 });
+function toClassic() {
+  app?.destroy?.();
+  app = null;
+  html.classList.add('classic');
+  classicBtn.textContent = 'Version 3D';
+  initClassic();
+  scrollTo(0, 0);
+}
+function to3D() {
+  if (!webglOK()) return;
+  html.classList.remove('classic');
+  classicBtn.textContent = 'Version sans 3D';
+  const old = $('#scene');
+  old.replaceWith(old.cloneNode(false)); // contexte WebGL neuf
+  boot3D();
+}
+// liens « à compléter » : ne pas sauter en haut de page
+document.addEventListener('click', (e) => { if (e.target.closest('a[href="#"]')) e.preventDefault(); });
 
 /* ==================================================================
    Son (désactivé par défaut, synthétisé : aucun fichier audio)
@@ -334,19 +353,25 @@ if (html.classList.contains('classic') || !webglOK()) {
   classicBtn.textContent = 'Version 3D';
   initClassic();
 } else {
+  boot3D();
+}
+
+function boot3D() {
   import('./scene-app.js')
-    .then((m) => { app = m.start({ STATIONS, SUBPINS, EASTER, Sound, selectTab, setProfile, closeMenu, openMenu, isMenuOpen: () => menuOpen }); })
+    .then((m) => { app = m.start({ STATIONS, SUBPINS, EASTER, Sound, selectTab, setProfile, closeMenu, openMenu, isMenuOpen: () => menuOpen, toClassic }); })
     .catch((err) => {
       console.error(err);
-      html.classList.add('classic');
-      $('#loader')?.classList.add('is-done');
-      initClassic();
+      toClassic();
     });
 }
 
+let classicReady = false;
 function initClassic() {
   $('#loader')?.classList.add('is-done');
+  if (classicReady) return;
+  classicReady = true;
   document.addEventListener('click', (e) => {
+    if (!html.classList.contains('classic')) return;
     const a = e.target.closest('[data-go]');
     if (a) {
       setProfile(a.dataset.profile, a.dataset.pack);
@@ -360,6 +385,6 @@ function initClassic() {
       document.getElementById(id)?.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth' });
     }
   });
-  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeMenu(); });
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && html.classList.contains('classic')) closeMenu(); });
 }
 

@@ -869,7 +869,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   ]).then(() => textures.forEach((t) => t.userData.redraw()));
 
   // horloge du tableau : rafraîchie chaque minute
-  setInterval(() => boardTex.userData.redraw(), 30000);
+  const clockTimer = setInterval(() => boardTex.userData.redraw(), 30000);
 
   /* ---------- niveau de l'eau (intro : remplissage) ---------- */
   function setFill(f) {
@@ -902,6 +902,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
 
   return {
     scene, update, ready, clickables, anchors, dolphin, splash, ripple, setFill, state, POOL,
+    stop: () => clearInterval(clockTimer),
   };
 }
 
