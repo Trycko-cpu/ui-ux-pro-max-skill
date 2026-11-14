@@ -626,7 +626,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   }
 
   /* ---------- 3 · plots de départ ---------- */
-  const laneNames = [['1', 'AQUABABY'], ['2', 'ENFANTS'], ['3', 'JEUNES · ADULTES']];
+  const laneNames = [['1', 'BÉBÉS'], ['2', 'ENFANTS'], ['3', 'ADOS · ADULTES']];
   [...LANES].reverse().forEach((lx, i) => {
     const b = new THREE.Group();
     mesh(rbox(0.5, 0.62, 0.5, 0.04, 4), std('#3A2C22', { roughness: 0.35, metalness: 0.1 }), 0, 0.31, 0, b);
@@ -784,8 +784,8 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     g.fillStyle = '#ffffff'; g.font = `700 64px ${FONT}`;
     g.fillText('MYLIZA SWIM', 300, 92);
     g.fillStyle = COLORS.orange; g.font = `600 30px ${FONT}`;
-    g.fillText('I L S   O N T   P L O N G É   A V A N T   V O U S', 304, 150);
-    [['1', 'AQUABABY', '3 MOIS – 1 AN'], ['2', 'ENFANTS', '1 – 9 ANS'], ['3', 'JEUNES & ADULTES', '9 ANS ET +']].forEach((r, i) => {
+    g.fillText('COURS PARTICULIERS · BRUXELLES', 304, 150);
+    [['1', 'BÉBÉS NAGEURS', '3 MOIS – 1 AN'], ['2', 'ENFANTS', '1 – 9 ANS'], ['3', 'ADOS ET ADULTES', '9 ANS ET +']].forEach((r, i) => {
       const y = 230 + i * 74;
       g.fillStyle = COLORS.orange; g.font = `700 44px ${FONT}`; g.fillText(r[0], 304, y);
       g.fillStyle = '#ffffff'; g.font = `600 40px ${FONT}`; g.fillText(r[1], 360, y);
@@ -796,7 +796,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     g.fillStyle = '#FF9A5C'; g.font = `600 128px ${FONT}`;
     g.fillText(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`, w - 70, 200);
     g.fillStyle = 'rgba(255,255,255,0.7)'; g.font = `500 30px ${FONT}`;
-    g.fillText('A V I S', w - 74, 320);
+    g.fillText('MESSAGES DES PARENTS', w - 74, 320);
     g.textAlign = 'left';
   });
   textures.push(boardTex);

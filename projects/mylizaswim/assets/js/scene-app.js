@@ -571,7 +571,7 @@ export function start(ctx) {
     if (!hit) { if (S.open !== null && !mob) closeSheet(); return; }
     if (hit.dolphin) {
       trick();
-      say(EASTER[Math.floor(Math.random() * EASTER.length)]);
+      if (EASTER.length) say(EASTER[Math.floor(Math.random() * EASTER.length)]);
       Sound.bloop(1.5);
       return;
     }
@@ -793,7 +793,7 @@ export function start(ctx) {
       resize();
       let asked = false;
       try { asked = !!sessionStorage.getItem('mls-slow'); sessionStorage.setItem('mls-slow', '1'); } catch { /* */ }
-      if (!asked) showToast('La visite 3D semble ralentir sur cet appareil. Voulez-vous passer à la version sans 3D ? Tout le contenu y est.');
+      if (!asked) showToast('La visite en 3D est lente sur cet appareil. La version simple contient tout le site, sans animation.');
     }
   }
   on(canvas, 'webglcontextlost', (e) => { e.preventDefault(); toClassic(); });

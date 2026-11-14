@@ -20,8 +20,8 @@ const PRICES = {
   domicile: { 1: { 30: null, 60: 45, 10: 425 }, 2: { 30: null, 60: 70, 10: 660 }, 3: { 30: null, 60: 96, 10: 900 } },
 };
 const PRICE_NOTES = {
-  piscine: 'Forfait : 10 leçons par mois. Tarifs susceptibles d\'être révisés.',
-  domicile: 'Forfait : 10 leçons par mois. Déplacement hors Bruxelles : + 15 € / km. Tarifs susceptibles d\'être révisés.',
+  piscine: 'Le forfait de 10 leçons se prend sur un mois. Les prix peuvent évoluer.',
+  domicile: 'Le forfait de 10 leçons se prend sur un mois. Hors Bruxelles, le déplacement est compté 15 € par km.',
 };
 const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
 const FORMULA = { 30: '30 minutes', 60: '1 heure', 10: '10 leçons' };
@@ -36,58 +36,58 @@ const STATIONS = [
     id: 'accueil', label: 'Accueil', title: 'Bienvenue', cta: 'Commencer la visite',
     cam: [1.6, 1.9, 13.3], look: [-0.4, 1.2, 3.0], camM: [0.8, 1.9, 13.6], lookM: [-0.6, 1.15, 3.0],
     dolphin: [0, -3.0],
-    line: 'Bienvenue. Je vous fais visiter : faites défiler pour entrer dans le bassin.',
+    line: 'Faites défiler pour entrer dans la piscine. Chaque objet du bassin ouvre une fiche.',
   },
   {
     // vue axiale, à hauteur d'homme, comme en entrant dans le hall
-    id: 'methode', label: 'Ma méthode', title: 'Ma méthode', cta: 'Découvrir la méthode',
+    id: 'methode', label: 'Ma méthode', title: 'Ma méthode', cta: 'Voir la méthode',
     cam: [0, 1.75, 2.3], look: [0, 1.15, -14], camM: [0, 1.85, 0.2], lookM: [0, 0.95, -14],
     fov: 50, fovM: 72,
     dolphin: [0, -4.6],
-    line: 'Trois lumières sur l\'eau : la méthode d\'Emmy, en trois temps.',
+    line: 'Ces trois lumières sur l\'eau, ce sont les trois étapes de la méthode d\'Emmy.',
   },
   {
     id: 'coach', label: 'Votre coach', title: 'Votre coach', cta: 'Rencontrer Emmy',
     cam: [1.2, 2.5, -3.2], look: [5.0, 1.6, -7.7], camM: [0.6, 3.0, -2.2], lookM: [5.0, 1.5, -7.6],
     dolphin: [2.5, -5.4],
-    line: 'La chaise du maître-nageur. Faites connaissance avec Emmy.',
+    line: 'Voici la chaise d\'Emmy. Découvrez qui vous accompagnera dans l\'eau.',
   },
   {
-    id: 'nageurs', label: 'Pour qui ?', pin: 'Pour qui ?', title: 'Pour qui ?', cta: 'Choisir mon couloir',
+    id: 'nageurs', label: 'Pour qui ?', pin: 'Pour qui ?', title: 'Pour qui ?', cta: 'Voir les cours',
     cam: [0, 1.5, -5.6], look: [0, 0.55, 0.9], camM: [0, 2.9, -9.4], lookM: [0, 0.45, 0.9],
     dolphin: [-2.2, -1.0],
-    line: 'Un plot par couloir : bébés nageurs, enfants, ados et adultes.',
+    line: 'Un plot par âge : bébés nageurs, enfants, ados et adultes. Choisissez le vôtre.',
   },
   {
     // la caméra passe sous la surface : le dauphin fait sa ronde autour de l'échelle
     id: 'premier-cours', label: 'Le premier cours', title: 'Le premier cours', cta: 'Voir le déroulé',
     cam: [-0.7, -0.9, -7.0], look: [-3.2, -0.62, -3.0], camM: [-0.5, -0.95, -7.6], lookM: [-3.1, -0.62, -3.1],
     orbit: { c: [-2.5, -0.85, -3.7], r: 0.75 },
-    line: 'On plonge. Le premier cours se passe ici, tout en douceur.',
+    line: 'On passe sous l\'eau. C\'est ici que commence le premier cours.',
   },
   {
     id: 'tarifs', label: 'Tarifs', title: 'Tarifs', cta: 'Voir les tarifs',
     cam: [2.4, 2.0, -9.2], look: [5.0, 0.55, -12.3], camM: [1.8, 2.8, -8.4], lookM: [5.0, 0.5, -12.3],
     dolphin: [2.6, -11.0],
-    line: 'Une, deux ou trois serviettes : en solo, en duo ou en trio.',
+    line: 'Sur le banc, une pile de serviettes par formule : seul, à deux ou à trois.',
   },
   {
     id: 'avis', label: 'Avis', title: 'Avis', cta: 'Lire les avis',
     cam: [-1.2, 1.9, -14.0], look: [-4.7, 1.85, -19.9], camM: [-0.6, 2.2, -12.6], lookM: [-4.7, 1.8, -19.9],
     dolphin: [-2.5, -13.8],
-    line: 'Près de la sortie, ce qu\'en disent les parents.',
+    line: 'Sur l\'écran défilent les messages des parents.',
   },
   {
-    id: 'faq', label: 'Questions', pin: 'Questions fréquentes', title: 'Questions fréquentes', cta: 'Voir les réponses',
+    id: 'faq', label: 'Questions', pin: 'Questions fréquentes', title: 'Questions fréquentes', cta: 'Voir les questions',
     cam: [1.4, 1.75, -15.4], look: [4.7, 1.45, -19.9], camM: [0.8, 2.0, -14.4], lookM: [4.7, 1.4, -19.9],
     dolphin: [2.5, -14.2],
-    line: 'Une question ? La bouée a les réponses.',
+    line: 'Les questions qu\'on pose le plus souvent à Emmy, avec ses réponses.',
   },
   {
-    id: 'reserver', label: 'Prendre contact', title: 'Prendre contact', cta: 'Choisir mon cours',
+    id: 'reserver', label: 'Réserver', title: 'Réserver', cta: 'Choisir mon cours',
     cam: [0.7, 1.7, -23.2], look: [-0.6, 0.7, -31.5], camM: [0.5, 2.0, -22.4], lookM: [-0.5, 0.7, -31.5],
     dolphin: [0, -10.0],
-    line: 'Fin de la visite. Choisissez votre cours, Emmy vous recontacte.',
+    line: 'La visite est terminée. Choisissez votre cours, Emmy vous recontacte pour fixer la date.',
   },
 ];
 const N = STATIONS.length;
@@ -99,8 +99,8 @@ const SUBPINS = {
 };
 
 const EASTER = [
-  'L\'eau, d\'abord étrangère, devient une alliée.',
-  'Chacun son couloir, chacun son rythme.',
+  'Une vrille, rien que pour vous.',
+  'Encore une ? D\'accord.',
 ];
 
 /* ------------------------------------------------------------------ */
@@ -130,7 +130,7 @@ function renderPrices(animate = true) {
   cols.innerHTML = [1, 2, 3].map((n) => {
     const half = t[n][30];
     return `<div class="pcol"><span class="pdots" aria-hidden="true">${'<i></i>'.repeat(n)}</span><h3>${GROUP[n]}</h3>
-      <p class="pbig">${t[n][60]}<small>€</small></p><p class="punit">l'heure</p>
+      <p class="pwho">${n} personne${n > 1 ? 's' : ''}</p><p class="pbig">${t[n][60]}<small>€</small></p><p class="punit">l'heure</p>
       <dl><div><dt>30 min</dt>${half == null ? '<dd class="off" aria-label="non proposé">—</dd>' : `<dd>${fmt(half)}</dd>`}</div>
       <div><dt>10 leçons</dt><dd>${fmt(t[n][10])}</dd></div></dl></div>`;
   }).join('');
@@ -151,7 +151,7 @@ renderPrices(false);
 const booking = { place: 'piscine', n: 1, f: 60 };
 const waLink = $('#waLink');
 function bookingSummary() {
-  const what = `${GROUP[booking.n]} · ${booking.place === 'piscine' ? 'au bassin' : 'chez vous'} · ${FORMULA[booking.f]}`;
+  const what = `${GROUP[booking.n]}, ${booking.place === 'piscine' ? 'à la piscine' : 'chez vous'}, ${FORMULA[booking.f]}`;
   return { what, price: PRICES[booking.place][booking.n][booking.f] };
 }
 function setBooking(patch = {}) {
@@ -170,7 +170,7 @@ function setBooking(patch = {}) {
   $('#bookPrice').textContent = fmt(price);
   if (CONFIG.whatsapp) {
     const who = $('#f-name').value.trim();
-    const text = `Bonjour Emmy${who ? `, ici ${who}` : ''}. Je souhaite réserver un cours : ${what} (${fmt(price)}).`;
+    const text = `Bonjour Emmy${who ? `, c'est ${who}` : ''}. J'aimerais réserver un cours : ${what.toLowerCase()} (${fmt(price)}). Quand seriez-vous disponible ?`;
     waLink.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
     waLink.hidden = false;
   }
@@ -213,12 +213,20 @@ form.addEventListener('submit', async (e) => {
       sent = r.ok;
     } catch { sent = false; }
   }
+  const sendErr = $('#e-send');
+  if (CONFIG.formEndpoint && !sent) {
+    sendErr.textContent = CONFIG.whatsapp
+      ? 'Le message n\'est pas parti. Vérifiez votre connexion et réessayez, ou écrivez-moi sur WhatsApp.'
+      : 'Le message n\'est pas parti. Vérifiez votre connexion et réessayez.';
+    sendErr.hidden = false;
+    return;
+  }
+  sendErr.hidden = true;
   form.hidden = true;
   const done = $('#formDone');
   done.hidden = false;
-  $('#formDoneText').textContent = CONFIG.formEndpoint && !sent
-    ? 'L\'envoi n\'a pas fonctionné. Réessayez dans un instant.'
-    : `Merci ${first}. Emmy vous recontacte très vite pour votre cours : ${what.toLowerCase()}.${CONFIG.formEndpoint ? '' : ' (Démo : formulaire pas encore connecté.)'}`;
+  $('#formDoneText').textContent = `Merci ${first}, j'ai bien reçu votre demande (${what.toLowerCase()}). Je vous recontacte très vite pour fixer le jour et l'heure.`
+    + (CONFIG.formEndpoint ? '' : ' Démo : le formulaire n\'est pas encore relié, rien n\'a été envoyé.');
   done.focus();
   Sound.splash?.();
 });
@@ -267,7 +275,7 @@ function toClassic() {
 function to3D() {
   if (!webglOK()) return;
   html.classList.remove('classic');
-  classicBtn.textContent = 'Version sans 3D';
+  classicBtn.textContent = 'Version simple, sans 3D';
   const old = $('#scene');
   old.replaceWith(old.cloneNode(false)); // contexte WebGL neuf
   boot3D();

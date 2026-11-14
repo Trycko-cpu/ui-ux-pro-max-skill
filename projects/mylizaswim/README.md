@@ -1,6 +1,6 @@
 # MyLizaSwim : le bassin
 
-Site vitrine immersif pour MyLizaSwim : Maliza Grace-Emmy (« Emmy »), maître-nageuse à Bruxelles. Cours particuliers pour bébés nageurs, enfants, ados et adultes, au bassin ou à domicile.
+Site vitrine immersif pour MyLizaSwim : Maliza Grace-Emmy (« Emmy »), maître-nageuse à Bruxelles. Cours particuliers pour bébés nageurs, enfants, ados et adultes, à la piscine ou chez vous.
 
 ## Le concept
 
@@ -17,13 +17,14 @@ Une visite en trois lieux, guidée par un dauphin de verre. Ambiance tamisée : 
 | 3 | Piscine | chaise de maître-nageur | **Votre coach** (photo, chiffres clés) |
 | 4 | Piscine | 3 plots numérotés | **Pour qui ?** (1 couloir = 1 public) |
 | 5 | **Sous l'eau** | échelle, planche vue d'en dessous | **Le premier cours** |
-| 6 | Piscine | banc et piles de 1, 2, 3 serviettes | **Tarifs** (solo, duo, trio · au bassin / chez vous) |
+| 6 | Piscine | banc et piles de 1, 2, 3 serviettes | **Tarifs** (solo, duo, trio ; à la piscine ou chez vous) |
 | 7 | Piscine | écran à gauche de la sortie | **Avis** |
 | 8 | Piscine | bouée à droite de la sortie | **FAQ** |
-| 9 | Terrasse | tables et fauteuils | **Prendre contact** (cours en trois choix, prix en direct) |
+| 9 | Terrasse | tables et fauteuils | **Réserver** (cours en trois choix, prix en direct) |
 
 - **Pas besoin de défiler** : objets cliquables, pastilles, menu, progression à droite (barre d'étapes sur mobile).
 - **Au défilement**, la caméra glisse sur un rail continu, une étape par geste, plonge sous la surface à l'étape 5, ressort, puis sort sur la terrasse.
+- **Les textes** : Emmy parle à la première personne dans les fiches ; le dauphin dit simplement ce qu'on trouve à chaque étape. Phrases courtes, sans slogan ni jargon, et chaque bouton dit ce qu'il fait (« Voir les tarifs », « Envoyer ma demande »). « Aquababy » est devenu « Bébés nageurs », plus clair pour les parents.
 - **Une fiche = une idée** : un titre court, une phrase, puis l'essentiel en tuiles. La fiche s'adapte à la hauteur de son contenu ; la fiche Tarifs passe en bleu Majorelle.
 - **Le dauphin** nage avec une ondulation calculée dans le shader : il plonge entre deux étapes, saute à l'arrivée, tourne autour de la caméra sous l'eau. Cliquez dessus : il fait une vrille.
 
@@ -51,9 +52,9 @@ Les textes, tarifs, avis, FAQ et la photo d'Emmy viennent de l'ancienne version 
 
 ## À fournir avant la mise en ligne
 
-- [ ] **Brancher le formulaire** : `assets/js/app.js` → `CONFIG.formEndpoint` (Formspree, Basin…). Sans ça, il affiche « Démo : formulaire pas encore connecté. » et n'envoie rien.
-- [ ] **Numéro WhatsApp** d'Emmy : `CONFIG.whatsapp` (affiche le lien « Ou écrire sur WhatsApp » avec la demande déjà rédigée).
-- [ ] **Confirmer les tarifs** (`PRICES`), en particulier « Déplacement hors Bruxelles : + 15 € / km ».
+- [ ] **Brancher le formulaire** : `assets/js/app.js` → `CONFIG.formEndpoint` (Formspree, Basin…). Sans ça, il affiche « Démo : le formulaire n'est pas encore relié » et n'envoie rien. Si l'envoi échoue, la demande reste à l'écran avec un message d'erreur.
+- [ ] **Numéro WhatsApp** d'Emmy : `CONFIG.whatsapp` (affiche le lien « Ou écrire directement sur WhatsApp » avec la demande déjà rédigée).
+- [ ] **Confirmer les tarifs** (`PRICES`), en particulier le déplacement hors Bruxelles à 15 € par km.
 - [ ] **Confirmer que les avis sont réels** et que les familles sont d'accord pour être citées.
 - [ ] Photo d'Emmy en meilleure définition (l'actuelle fait 600 × 450 px).
 - [ ] Mentions légales + politique de confidentialité.

@@ -335,6 +335,7 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .specs { list-style: none; padding: 18px 0 0; margin: 24px 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; border-top: 1px solid var(--hair); }
 .specs strong { display: block; font-family: var(--font-display); font-size: 28px; font-weight: 600; letter-spacing: -0.035em; line-height: 1; font-variant-numeric: tabular-nums; }
 .specs span { display: block; margin-top: 6px; font-size: 13px; line-height: 1.3; color: var(--text-2); }
+.bio { font-size: 16px; line-height: 1.5; letter-spacing: -0.01em; color: var(--ink); }
 .pull { margin: 0; padding-left: 16px; border-left: 2px solid var(--orange); font-size: 17px; line-height: 1.45; font-weight: 500; color: var(--ink); }
 
 .lanes { display: grid; gap: 8px; }
@@ -344,6 +345,7 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .lane-age { font-size: 13px; color: var(--text-3); margin: 2px 0 4px; }
 .lane-card p:last-child { font-size: 15px; color: var(--text-2); }
 
+.list-title { margin-bottom: 4px; font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--ink); }
 .checklist { list-style: none; padding: 0; margin: 0; }
 .checklist li { padding: 14px 0; border-top: 1px solid var(--hair); }
 .checklist li:last-child { border-bottom: 1px solid var(--hair); }
@@ -366,6 +368,7 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .pdots i:nth-child(2) { background: #fff; }
 .pdots i:nth-child(3) { background: var(--orange); }
 .pcol h3 { font-size: 19px; color: #fff; }
+.pwho { margin-top: 2px; font-size: 13px; color: rgba(255, 255, 255, 0.72); }
 .pbig { margin: 10px 0 2px; font-family: var(--font-display); font-size: 44px; font-weight: 600; letter-spacing: -0.045em; line-height: 1; color: #fff; font-variant-numeric: tabular-nums; }
 .pbig small { font-size: 0.42em; letter-spacing: 0; margin-left: 2px; color: var(--peach); }
 .punit { font-size: 14px; color: rgba(255, 255, 255, 0.72); }
@@ -391,6 +394,8 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .quotes figure { margin: 0; padding: 18px; border-radius: 18px; background: var(--tile); scroll-snap-align: start; display: flex; flex-direction: column; justify-content: space-between; gap: 12px; }
 .quotes blockquote { margin: 0; font-size: 16px; line-height: 1.45; }
 .quotes figcaption { font-size: 13px; color: var(--text-2); }
+.swipe-hint { margin-top: 10px; font-size: 13px; color: var(--text-3); }
+#e-send { margin-top: 10px; }
 
 /* questions */
 .faq details { border-top: 1px solid var(--hair); }
