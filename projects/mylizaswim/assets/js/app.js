@@ -38,56 +38,56 @@ const PRICING = {
 ------------------------------------------------------------------- */
 const STATIONS = [
   {
-    id: 'accueil', label: 'Accueil', cta: 'Commencer la visite',
+    id: 'accueil', label: 'Accueil', title: 'Bienvenue', cta: 'Commencer la visite',
     cam: [1.6, 1.9, 13.3], look: [-0.4, 1.2, 3.0], camM: [0.8, 1.9, 13.6], lookM: [-0.6, 1.15, 3.0],
     dolphin: [0, -3.0],
     line: 'Bienvenue chez MyLizaSwim. Installez-vous, je vous fais visiter : faites défiler pour entrer dans le bassin.',
   },
   {
-    id: 'methode', label: 'Ma méthode',
+    id: 'methode', label: 'Ma méthode', title: 'Ma méthode', cta: 'Découvrir la méthode',
     cam: [0, 2.9, -1.4], look: [0, -0.35, -7.8], camM: [0, 5.0, 2.2], lookM: [0, -0.7, -7.5],
     dolphin: [0, -4.6],
     line: 'Ces trois lumières, c\'est la méthode d\'Emmy : Sensation, Expression, Application.',
   },
   {
-    id: 'coach', label: 'Votre coach',
+    id: 'coach', label: 'Votre coach', title: 'Votre coach', cta: 'Rencontrer Emmy',
     cam: [1.2, 2.5, -3.2], look: [5.0, 1.6, -7.7], camM: [0.6, 3.0, -2.2], lookM: [5.0, 1.5, -7.6],
     dolphin: [2.5, -5.4],
     line: 'La chaise du maître-nageur, c\'est la place d\'Emmy. Elle aussi a appris à nager : découvrez son parcours.',
   },
   {
-    id: 'nageurs', label: 'Quel nageur êtes-vous ?', pin: 'Quel nageur êtes-vous ?',
+    id: 'nageurs', label: 'Quel nageur êtes-vous ?', pin: 'Quel nageur êtes-vous ?', title: 'Quel nageur êtes-vous ?', cta: 'Choisir mon couloir',
     cam: [0, 1.5, -5.6], look: [0, 0.55, 0.9], camM: [0, 2.9, -9.4], lookM: [0, 0.45, 0.9],
     dolphin: [-2.2, -1.0],
-    line: 'Trois plots, trois couloirs : Aquababy, Enfants, Jeunes et adultes. Lequel est le vôtre ?',
+    line: 'Trois plots, trois couloirs : Aquababy dès 3 mois, Enfants de 1 à 9 ans, puis Jeunes et adultes. Lequel est le vôtre ?',
   },
   {
     // la caméra passe sous la surface : le dauphin fait sa ronde autour de l'échelle
-    id: 'premier-cours', label: 'Le premier cours',
+    id: 'premier-cours', label: 'Le premier cours', title: 'Le premier cours', cta: 'Voir le déroulé',
     cam: [-0.7, -0.9, -7.0], look: [-3.2, -0.62, -3.0], camM: [-0.5, -0.95, -7.6], lookM: [-3.1, -0.62, -3.1],
     orbit: { c: [-2.5, -0.85, -3.7], r: 0.75 },
     line: 'On plonge ! Le premier cours, c\'est un premier pas dans l\'eau, tout en douceur. Voici comment il se déroule.',
   },
   {
-    id: 'tarifs', label: 'Tarifs',
+    id: 'tarifs', label: 'Tarifs', title: 'Tarifs', cta: 'Trouver ma formule',
     cam: [2.4, 2.0, -9.2], look: [5.0, 0.55, -12.3], camM: [1.8, 2.8, -8.4], lookM: [5.0, 0.5, -12.3],
     dolphin: [2.6, -11.0],
-    line: 'Une serviette, cinq, dix : sur le banc, trouvez la formule qui vous correspond.',
+    line: 'Une séance, un carnet de 5 ou de 10 : deux questions suffisent pour trouver votre formule.',
   },
   {
-    id: 'avis', label: 'Avis',
+    id: 'avis', label: 'Avis', title: 'Avis', cta: 'Lire les avis',
     cam: [-1.2, 1.9, -14.0], look: [-4.7, 1.85, -19.9], camM: [-0.6, 2.2, -12.6], lookM: [-4.7, 1.8, -19.9],
     dolphin: [-2.5, -13.8],
     line: 'Près de la sortie, l\'écran du bassin : ce qu\'en disent les familles et les élèves.',
   },
   {
-    id: 'faq', label: 'Questions', pin: 'Questions fréquentes',
+    id: 'faq', label: 'Questions', pin: 'Questions fréquentes', title: 'Questions fréquentes', cta: 'Voir les réponses',
     cam: [1.4, 1.75, -15.4], look: [4.7, 1.45, -19.9], camM: [0.8, 2.0, -14.4], lookM: [4.7, 1.4, -19.9],
     dolphin: [2.5, -14.2],
     line: 'Une question ? La bouée est là pour ça : les réponses aux questions les plus fréquentes.',
   },
   {
-    id: 'reserver', label: 'Prendre contact', cta: 'Prendre contact',
+    id: 'reserver', label: 'Prendre contact', title: 'Prendre contact', cta: 'Écrire à Emmy',
     cam: [0.7, 1.7, -23.2], look: [-0.6, 0.7, -31.5], camM: [0.5, 2.0, -22.4], lookM: [-0.5, 0.7, -31.5],
     dolphin: [0, -10.0],
     line: 'Fin de la visite, sur la terrasse. Laissez vos coordonnées : Emmy vous recontacte rapidement.',

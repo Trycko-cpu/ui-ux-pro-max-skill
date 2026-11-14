@@ -149,10 +149,15 @@ export function start(ctx) {
     if (S.open !== null) closeSheet();
     S.tween = null; S.pendingOpen = null;
     S.dir = Math.sign(delta) || S.dir;
-    S.target = clamp(S.target + delta, 0, N - 1);
+    if (gestureBase === null) gestureBase = Math.round(S.target);
+    clearTimeout(gestureTimer);
+    gestureTimer = setTimeout(() => { gestureBase = null; }, 280);
+    S.target = clamp(S.target + delta, Math.max(0, gestureBase - 1), Math.min(N - 1, gestureBase + 1));
     clearTimeout(snapTimer);
     snapTimer = setTimeout(snap, 140);
   }
+  let gestureBase = null;
+  let gestureTimer = 0;
 
   on(window, 'wheel', (e) => {
     if (isMenuOpen()) return;
@@ -318,6 +323,15 @@ export function start(ctx) {
   /* ---------- rail de progression ---------- */
   rail.innerHTML = STATIONS.map((s, i) => `<button class="rail-item" type="button" data-rail="${i}" aria-label="${esc(s.pin || s.label)}"><span class="rail-label">${esc(s.label)}</span><span class="rail-bead"></span></button>`).join('');
   const railItems = [...rail.children];
+  const progress = $('#progress');
+  progress.innerHTML = STATIONS.map((s, i) => `<button type="button" data-prog="${i}" aria-label="Étape ${i + 1} : ${esc(s.title || s.label)}"><i></i></button>`).join('');
+  const progItems = [...progress.children];
+  on(progress, 'click', (e) => {
+    const b = e.target.closest('[data-prog]');
+    if (!b) return;
+    closeSheet();
+    goTo(+b.dataset.prog);
+  });
   on(rail, 'click', (e) => {
     const b = e.target.closest('[data-rail]');
     if (!b) return;
@@ -374,7 +388,8 @@ export function start(ctx) {
     const st = STATIONS[i];
     S.shown = i;
     say(st.line);
-    $('#mascotStep').textContent = `${i + 1} / ${N}`;
+    $('#mascotStep').textContent = `Étape ${i + 1} sur ${N}`;
+    $('#mascotTitle').textContent = st.title || st.label;
     mascotOpen.textContent = st.cta || 'Découvrir';
     $('#prevBtn').disabled = i === 0;
     $('#nextBtn').disabled = i === N - 1;
@@ -584,6 +599,11 @@ export function start(ctx) {
     rail.style.opacity = intro ? '0' : '';
     if (railShown === S.nearest) return;
     railShown = S.nearest;
+    progItems.forEach((b, i) => {
+      b.classList.toggle('is-current', i === S.nearest);
+      b.classList.toggle('is-past', i < S.nearest);
+      if (i === S.nearest) b.setAttribute('aria-current', 'step'); else b.removeAttribute('aria-current');
+    });
     railItems.forEach((b, i) => {
       b.classList.toggle('is-current', i === S.nearest);
       b.classList.toggle('is-past', i < S.nearest);
@@ -738,12 +758,51 @@ export function start(ctx) {
     if (goal !== null && goal !== D.goal && (!D.pendingGoal || D.pendingGoal.i !== goal)) D.pendingGoal = { i: goal, at: t + 0.12 };
   }
 
+  /* ---------- garde-fous : appareil lent, contexte WebGL perdu, chargement bloqué ---------- */
+  const toast = $('#toast');
+  function showToast(text) {
+    $('#toastText').textContent = text;
+    toast.hidden = false;
+  }
+  on($('#toastYes'), 'click', () => { toast.hidden = true; toClassic(); });
+  on($('#toastNo'), 'click', () => { toast.hidden = true; });
+  const Q = { level: 0, frames: 0, time: 0, warm: 0, last: performance.now() };
+  const autoQuality = !navigator.webdriver; // pas d'adaptation pendant les tests automatisés
+  function watchPerf() {
+    const now = performance.now();
+    const real = Math.min((now - Q.last) / 1000, 0.5);
+    Q.last = now;
+    if (!autoQuality || intro || Q.level >= 2 || document.hidden) return;
+    Q.warm += real;
+    if (Q.warm < 3) return;
+    Q.frames++; Q.time += real;
+    if (Q.time < 2) return;
+    const fps = Q.frames / Q.time;
+    Q.frames = 0; Q.time = 0;
+    if (Q.level === 0 && fps < 32) {
+      Q.level = 1;
+      renderer.setPixelRatio(Math.min(1, devicePixelRatio || 1));
+      world.setLowFx(true);
+      resize();
+    } else if (Q.level === 1 && fps < 20) {
+      Q.level = 2;
+      renderer.setPixelRatio(0.75);
+      resize();
+      let asked = false;
+      try { asked = !!sessionStorage.getItem('mls-slow'); sessionStorage.setItem('mls-slow', '1'); } catch { /* */ }
+      if (!asked) showToast('La visite 3D semble ralentir sur cet appareil. Voulez-vous passer à la version sans 3D ? Tout le contenu y est.');
+    }
+  }
+  on(canvas, 'webglcontextlost', (e) => { e.preventDefault(); toClassic(); });
+  const safety = setTimeout(() => { if (!loader.classList.contains('is-done')) toClassic(); }, 25000);
+
   const clock = new THREE.Clock();
   let raf = 0;
   let uwShown = false;
   function frame() {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), 1 / 20);
+    watchPerf();
     const t = clock.elapsedTime;
     step(t, dt);
     updateCamera(t, dt);
@@ -791,6 +850,7 @@ export function start(ctx) {
     else { setMascot(Math.round(S.cur)); }
     chrome();
     frame();
+    clearTimeout(safety);
     setTimeout(() => {
       loader.classList.add('is-done');
       if (deep > 0) openSheet(deep);
@@ -810,6 +870,9 @@ export function start(ctx) {
     sheet.style.transform = '';
     pinsEl.innerHTML = '';
     rail.innerHTML = '';
+    progress.innerHTML = '';
+    toast.hidden = true;
+    clearTimeout(safety);
     hero.classList.remove('is-hidden', 'is-intro');
     hero.inert = false;
     mascot.classList.add('is-hidden');

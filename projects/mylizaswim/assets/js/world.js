@@ -74,6 +74,20 @@ function loadImage(src) {
   });
 }
 const rnd = (a, b) => a + Math.random() * (b - a);
+// sphère déformée : un feuillage qui n'a pas l'air d'une boule parfaite
+function blobGeo(r, seed = 1, detail = 4, amp = 0.13) {
+  const g = new THREE.IcosahedronGeometry(r, detail);
+  const p = g.attributes.position;
+  const v = new THREE.Vector3();
+  for (let i = 0; i < p.count; i++) {
+    v.fromBufferAttribute(p, i);
+    const n = v.clone().normalize();
+    const d = 1 + amp * (Math.sin(n.x * 3.1 + seed) * 0.5 + Math.sin(n.y * 4.3 + seed * 2.1) * 0.35 + Math.sin(n.z * 5.7 + seed * 3.3) * 0.3 + Math.sin((n.x + n.z) * 9 + seed) * 0.12);
+    p.setXYZ(i, v.x * d, v.y * d, v.z * d);
+  }
+  g.computeVertexNormals();
+  return g;
+}
 
 /* ==================================================================
    createWorld
@@ -146,6 +160,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     grd.addColorStop(0, 'rgba(255,255,255,0.75)'); grd.addColorStop(0.6, 'rgba(255,255,255,0.12)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
     g.fillStyle = grd; g.fillRect(0, 0, w, h);
   });
+  const beams = [];
   const spot = (x, y, z, tx, ty, tz, { color = '#FFC48A', intensity = 48, angle = 0.42, beam = true, castShadow = false, parent = scene } = {}) => {
     const sp = new THREE.SpotLight(color, intensity, 16, angle, 0.85, 1.6);
     sp.position.set(x, y, z);
@@ -162,6 +177,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       cone.lookAt(tx, ty, tz); cone.rotateX(-Math.PI / 2);
       cone.renderOrder = 9;
       parent.add(cone);
+      beams.push(cone);
     }
     return sp;
   };
@@ -811,6 +827,77 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   clickables.push({ root: buoyStand, station: 'faq' });
   anchors.faq = v3(4.7, 2.3, HALL.far + 0.1);
 
+  /* ---------- détails du hall ---------- */
+  // plafond central en lames de noyer, encadré par les LED
+  {
+    const slatZ0 = HALL.near - 3.1, slatZ1 = HALL.far + 3.1, len = slatZ0 - slatZ1;
+    const slatGeo = new THREE.BoxGeometry(0.07, 0.06, len);
+    const n = 37;
+    const slats = new THREE.InstancedMesh(slatGeo, std('#4A3022', { roughness: 0.55 }), n);
+    for (let i = 0; i < n; i++) { dummy.position.set(-2.88 + i * 0.16, HALL.h - 0.07, (slatZ0 + slatZ1) / 2); dummy.rotation.set(0, 0, 0); dummy.updateMatrix(); slats.setMatrixAt(i, dummy.matrix); }
+    scene.add(slats);
+  }
+  // jardinières le long des garde-corps de la mezzanine : la verdure retombe vers le bassin
+  [-1, 1].forEach((side) => {
+    for (let z = 1.0; z > HALL.far + 2; z -= 4) {
+      mesh(rbox(0.42, 0.36, 2.8, 0.03), std('#2A1E16', { roughness: 0.6 }), side * (HALL.x - 2.6), HALL.mezz + 0.6, z - 1.0);
+      const foliage = mesh(blobGeo(0.5, z + side, 3, 0.2), leafM, side * (HALL.x - 2.6), HALL.mezz + 0.92, z - 1.0);
+      foliage.scale.set(0.55, 0.45, 2.9);
+    }
+  });
+  // liseré de laiton incrusté dans la pierre autour du bassin
+  {
+    const brass = std('#B88A4A', { metalness: 1, roughness: 0.28 });
+    const o = 0.62;
+    [-1, 1].forEach((sx) => mesh(new THREE.BoxGeometry(0.03, 0.006, POOL.l + o * 2), brass, sx * (POOL.w / 2 + o), 0.003, -POOL.l / 2));
+    [o, -POOL.l - o].forEach((z) => mesh(new THREE.BoxGeometry(POOL.w + o * 2, 0.006, 0.03), brass, 0, 0.003, z));
+  }
+  // enseigne lumineuse au-dessus de la verrière (visible depuis les plots)
+  {
+    const signTex = canvasTexture(1024, 256, (g, w, h) => {
+      g.clearRect(0, 0, w, h);
+      if (logoImg) {
+        g.fillStyle = 'rgba(255,255,255,0.95)'; g.beginPath(); g.arc(150, h / 2, 92, 0, Math.PI * 2); g.fill();
+        g.drawImage(logoImg, 52, h / 2 - 98, 196, 196);
+      }
+      g.fillStyle = '#FFE6CC'; g.font = `700 112px ${FONT}`; g.textBaseline = 'middle';
+      g.fillText('MYLIZA', 290, h / 2 - 12);
+      g.fillStyle = COLORS.amber; g.font = `500 34px ${FONT}`;
+      if ('letterSpacing' in g) g.letterSpacing = '18px';
+      g.fillText('SWIM', 296, h / 2 + 70);
+    });
+    textures.push(signTex);
+    const sign = mesh(new THREE.PlaneGeometry(4.4, 1.1), new THREE.MeshBasicMaterial({ map: signTex, transparent: true, toneMapped: false }), 0, 5.4, HALL.near - 0.04);
+    sign.rotation.y = Math.PI;
+    const halo = mesh(new THREE.PlaneGeometry(6.4, 2.6), new THREE.MeshBasicMaterial({ map: glowTex, color: '#FF9A50', transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 5.4, HALL.near - 0.03);
+    halo.rotation.y = Math.PI;
+  }
+  // douche de plage en inox près des plots
+  {
+    const g = new THREE.Group();
+    mesh(new THREE.CylinderGeometry(0.035, 0.035, 2.3, 16), steel, 0, 1.15, 0, g);
+    mesh(new THREE.CylinderGeometry(0.16, 0.12, 0.03, 32), steel, 0.12, 2.28, 0, g);
+    mesh(new THREE.TorusGeometry(0.06, 0.012, 8, 20, Math.PI), steel, 0.06, 2.3, 0, g).rotation.z = Math.PI;
+    mesh(new THREE.CylinderGeometry(0.03, 0.03, 0.08, 12), std('#B88A4A', { metalness: 1, roughness: 0.3 }), 0.05, 1.1, 0, g).rotation.z = Math.PI / 2;
+    mesh(new THREE.CylinderGeometry(0.28, 0.28, 0.01, 32), std('#1A130E', { roughness: 0.3 }), 0, 0.005, 0, g);
+    g.position.set(-5.3, 0, 2.2);
+    scene.add(shadow(g));
+  }
+  // guéridons entre les transats : serviette roulée et carafe
+  {
+    const glassM = new THREE.MeshPhysicalMaterial({ color: '#E8F0FF', transmission: 0.9, roughness: 0.05, thickness: 0.1, transparent: true });
+    [-1, 1].forEach((side) => [-7.5, -13.5].forEach((z) => {
+      const g = new THREE.Group();
+      mesh(new THREE.CylinderGeometry(0.24, 0.24, 0.03, 32), bronze, 0, 0.5, 0, g);
+      mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.5, 8), bronze, 0, 0.25, 0, g);
+      mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.02, 24), bronze, 0, 0.01, 0, g);
+      mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.3, 24), std('#EFE6D8', { roughness: 0.95 }), 0.06, 0.58, 0.04, g).rotation.z = Math.PI / 2;
+      mesh(new THREE.CylinderGeometry(0.045, 0.05, 0.2, 24), glassM, -0.08, 0.62, -0.05, g);
+      g.position.set(side * 7.7, 0, z);
+      scene.add(shadow(g));
+    }));
+  }
+
   /* ---------- spots : chaque étape a sa flaque de lumière ---------- */
   spot(0, HALL.h - 0.1, 2.0, 0, 0, 0.6, { angle: 0.55, intensity: 55 });
   spot(4.3, HALL.h - 0.1, -6.6, 5.0, 0, -7.6, { castShadow: !low });
@@ -937,13 +1024,24 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       else for (let b = 0; b < 5; b++) mesh(new THREE.BoxGeometry(0.2, rnd(0.22, 0.3), 0.04), decoM[(b + k) % 4], ux + 0.06, y + 0.13, z + b * 0.05, lounge);
     });
 
+    // grande toile abstraite sur le mur droit, au-dessus du bar (bleu Majorelle, orange, brun)
+    const artTex = canvasTexture(512, 320, (g, w, h) => {
+      g.fillStyle = '#E9DFD0'; g.fillRect(0, 0, w, h);
+      g.fillStyle = '#2F39DA'; g.beginPath(); g.arc(w * 0.36, h * 0.55, h * 0.36, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#D4713D'; g.beginPath(); g.arc(w * 0.62, h * 0.42, h * 0.26, 0, Math.PI * 2); g.fill();
+      g.fillStyle = 'rgba(58,38,24,0.85)'; g.fillRect(w * 0.1, h * 0.82, w * 0.8, 6);
+    });
+    const art = mesh(new THREE.PlaneGeometry(1.9, 1.2), std('#ffffff', { map: artTex, roughness: 0.9 }), LOUNGE.x - 0.03, 2.35, 11.6, lounge);
+    art.rotation.y = -Math.PI / 2;
+    mesh(new THREE.BoxGeometry(0.04, 1.28, 1.98), bronze, LOUNGE.x - 0.025, 2.35, 11.6, lounge);
+
     // tapis rond
     const rugTex = canvasTexture(512, 512, (g, w) => {
       g.fillStyle = '#7E6A58'; g.beginPath(); g.arc(w / 2, w / 2, w / 2, 0, Math.PI * 2); g.fill();
       for (let i = 0; i < 6000; i++) { g.fillStyle = `rgba(255,255,255,${rnd(0, 0.08)})`; g.fillRect(Math.random() * w, Math.random() * w, 2, 2); }
       g.strokeStyle = 'rgba(80,65,50,0.35)'; g.lineWidth = 10; g.beginPath(); g.arc(w / 2, w / 2, w / 2 - 22, 0, Math.PI * 2); g.stroke();
     });
-    const rug = mesh(new THREE.CircleGeometry(2.4, 64), std('#ffffff', { map: rugTex, roughness: 1, transparent: true }), -2.7, 0.006, 8.6, lounge);
+    const rug = mesh(new THREE.CircleGeometry(2.3, 64), std('#ffffff', { map: rugTex, roughness: 1, transparent: true }), -3.9, 0.006, 8.5, lounge);
     rug.rotation.x = -Math.PI / 2; rug.receiveShadow = true;
 
     // canapés cuir cognac
@@ -960,12 +1058,29 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       g.position.set(x, 0, z); g.rotation.y = ry;
       lounge.add(shadow(g));
     };
-    sofa(2.5, -5.0, 8.6, Math.PI / 2);
-    sofa(2.3, -2.5, 6.1, 0);
-    // table basse
-    mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.06, 48), std('#2B241F', { roughness: 0.3 }), -2.7, 0.4, 8.5, lounge).castShadow = true;
-    mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.36, 32), std('#B08D57', { roughness: 0.3, metalness: 0.7 }), -2.7, 0.19, 8.5, lounge);
-    mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.16, 24), std('#E9E2D6'), -2.5, 0.51, 8.4, lounge);
+    // l'assise regarde la cheminée
+    sofa(2.5, -1.75, 8.5, -Math.PI / 2);
+    sofa(2.2, -3.9, 6.15, 0);
+    // table basse, livres, vase
+    mesh(new THREE.CylinderGeometry(0.62, 0.62, 0.06, 48), std('#2B241F', { roughness: 0.3 }), -3.9, 0.4, 8.5, lounge).castShadow = true;
+    mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.36, 32), std('#B08D57', { roughness: 0.3, metalness: 0.7 }), -3.9, 0.19, 8.5, lounge);
+    mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.16, 24), std('#E9E2D6'), -3.7, 0.51, 8.35, lounge);
+    [[0.3, 0.04, '#2F39DA'], [0.27, 0.035, '#D4713D'], [0.24, 0.03, '#E9E2D6']].forEach(([w, h, c], k) => {
+      const b = mesh(new THREE.BoxGeometry(w, h, w * 0.75), std(c, { roughness: 0.8 }), -4.15, 0.45 + k * 0.038 + h / 2, 8.7, lounge);
+      b.rotation.y = k * 0.25;
+    });
+    // suspension en anneau au-dessus de la table
+    {
+      const ring = mesh(new THREE.TorusGeometry(0.58, 0.022, 12, 72), new THREE.MeshStandardMaterial({ color: '#2A1E16', emissive: '#FFB566', emissiveIntensity: 1.3 }), -3.9, 2.45, 8.5, lounge);
+      ring.rotation.x = Math.PI / 2;
+      [0, 2.09, 4.19].forEach((a) => mesh(new THREE.CylinderGeometry(0.003, 0.003, 0.95, 4), std('#111'), -3.9 + Math.cos(a) * 0.58, 2.93, 8.5 + Math.sin(a) * 0.58, lounge));
+      lightPool(-3.9, 8.5, 1.4, 1.4, '#FFB070', 0.2, 0.012, lounge);
+    }
+    // guéridon et lampe à poser au bout du canapé
+    mesh(new THREE.CylinderGeometry(0.22, 0.22, 0.03, 32), bronze, -1.75, 0.55, 10.25, lounge);
+    mesh(new THREE.CylinderGeometry(0.02, 0.02, 0.55, 8), bronze, -1.75, 0.27, 10.25, lounge);
+    mesh(new THREE.CylinderGeometry(0.06, 0.08, 0.22, 20), std('#E9E2D6', { roughness: 0.4 }), -1.75, 0.68, 10.25, lounge);
+    mesh(new THREE.CylinderGeometry(0.12, 0.16, 0.18, 24, 1, true), new THREE.MeshStandardMaterial({ color: '#F3D9B4', emissive: '#FFB566', emissiveIntensity: 1.0, side: THREE.DoubleSide }), -1.75, 0.88, 10.25, lounge);
     // fauteuils velours marine
     const velvet = phys('#2A35C8', { roughness: 0.85, sheen: 1, sheenColor: new THREE.Color('#7C86FF'), sheenRoughness: 0.45 });
     const armchair = (x, z, tx, tz) => {
@@ -979,8 +1094,8 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       g.position.set(x, 0, z); g.rotation.y = ry;
       lounge.add(shadow(g));
     };
-    armchair(-1.0, 7.5, -2.7, 8.5);
-    armchair(-1.0, 9.5, -2.7, 8.5);
+    armchair(-3.0, 10.75, -3.9, 8.5);
+    armchair(-4.85, 10.75, -3.9, 8.5);
     mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.42, 32), phys('#C08A33', { roughness: 0.8, sheen: 0.6 }), 1.2, 0.21, 5.9, lounge).castShadow = true;
 
     // colonne marine
@@ -1005,10 +1120,10 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     plant(-6.1, 13.2, 0.9, lounge);
 
     // lampadaire près du canapé
-    mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.5, 8), bronze, -5.9, 0.75, 10.6, lounge);
-    mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.02, 24), bronze, -5.9, 0.01, 10.6, lounge);
-    mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.32, 32, 1, true), new THREE.MeshStandardMaterial({ color: '#F3D9B4', emissive: '#FFB566', emissiveIntensity: 1.1, side: THREE.DoubleSide }), -5.9, 1.62, 10.6, lounge);
-    lightPool(-5.6, 10.4, 1.4, 1.4, '#FFB070', 0.25, 0.012, lounge);
+    mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.5, 8), bronze, -5.6, 0.75, 5.5, lounge);
+    mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.02, 24), bronze, -5.6, 0.01, 5.5, lounge);
+    mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.32, 32, 1, true), new THREE.MeshStandardMaterial({ color: '#F3D9B4', emissive: '#FFB566', emissiveIntensity: 1.1, side: THREE.DoubleSide }), -5.6, 1.62, 5.5, lounge);
+    lightPool(-5.4, 5.7, 1.4, 1.4, '#FFB070', 0.25, 0.012, lounge);
 
     // lumière chaude et tamisée du salon
     const fireLight = new THREE.PointLight('#FF8A3A', 4, 7, 1.5);
@@ -1017,11 +1132,11 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     lounge.add(fireLight);
     if (!low) {
       const lampLight = new THREE.PointLight('#FFB566', 3.2, 6, 1.5);
-      lampLight.position.set(-5.9, 1.6, 10.6);
+      lampLight.position.set(-5.6, 1.6, 5.5);
       lounge.add(lampLight);
     }
     // un spot au-dessus de la table basse, avec ombres portées sur le tapis
-    spot(-2.4, LOUNGE.h - 0.05, 8.8, -2.7, 0, 8.4, { intensity: 22, angle: 0.75, beam: false, castShadow: !low, parent: lounge });
+    spot(-3.6, LOUNGE.h - 0.05, 8.9, -3.9, 0, 8.5, { intensity: 22, angle: 0.75, beam: false, castShadow: !low, parent: lounge });
     if (!low) spot(4.9, LOUNGE.h - 0.05, 8.3, 5.3, 1.1, 8.3, { intensity: 16, angle: 0.9, beam: false, color: '#FFB677', parent: lounge });
   }
   scene.add(lounge);
@@ -1064,13 +1179,17 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     // arbres
     const trunkM = std('#3A2A1F', { roughness: 0.9 });
     const duskLeaf = std('#6A7458', { map: leafTex, roughness: 0.95 });
-    const tree = (x, z, s, conifer) => {
+    // cyprès élancés et feuillus aux couronnes irrégulières
+    const tree = (x, z, s, cypress) => {
       const g = new THREE.Group();
-      mesh(new THREE.CylinderGeometry(0.12, 0.18, 2.4, 10), trunkM, 0, 1.2, 0, g);
-      if (conifer) {
-        [[1.9, 2.2, 3.1], [1.5, 2.0, 4.6], [1.0, 1.8, 6.0]].forEach(([r, h, y]) => mesh(new THREE.ConeGeometry(r, h, 18), duskLeaf, 0, y, 0, g));
+      if (cypress) {
+        mesh(new THREE.CylinderGeometry(0.08, 0.12, 1.2, 8), trunkM, 0, 0.6, 0, g);
+        const c = mesh(blobGeo(1, x * 1.3 + z, 4, 0.08), duskLeaf, 0, 3.6, 0, g);
+        c.scale.set(0.85, 3.1, 0.85);
       } else {
-        [[0, 4.2, 0, 1.9], [1.0, 3.6, 0.4, 1.3], [-1.0, 3.7, -0.3, 1.4], [0.2, 5.2, -0.2, 1.3]].forEach(([dx, y, dz, r]) => mesh(new THREE.SphereGeometry(r, 28, 20), duskLeaf, dx, y, dz, g));
+        const t = mesh(new THREE.CylinderGeometry(0.11, 0.2, 3.0, 10), trunkM, 0, 1.5, 0, g);
+        t.rotation.z = Math.sin(x) * 0.06;
+        [[0, 4.3, 0, 1.8], [1.1, 3.8, 0.5, 1.25], [-1.0, 3.9, -0.4, 1.35], [0.3, 5.2, -0.2, 1.2]].forEach(([dx, y, dz, r], k) => mesh(blobGeo(r, x + z + k * 1.7, 4, 0.16), duskLeaf, dx, y, dz, g));
       }
       g.position.set(x, 0, z); g.scale.setScalar(s);
       terrace.add(shadow(g, true, false));
@@ -1116,13 +1235,25 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         tubChair(x + Math.cos(a) * 0.82, z + Math.sin(a) * 0.82, Math.PI - a);
       }
     };
-    [[-3.4, -25.8, 3], [1.4, -27.6, 4], [5.4, -25.0, 3], [-2.0, -31.8, 4], [3.6, -32.6, 3], [-7.0, -29.0, 3], [8.6, -30.0, 3]].forEach(([x, z, n]) => table(x, z, n));
-    // guirlande de lumières chaudes au-dessus des tables
+    [[-3.4, -25.8, 3], [1.4, -27.6, 4], [5.4, -25.0, 3], [-2.0, -31.8, 4], [3.6, -32.6, 3], [-6.0, -31.2, 3], [8.6, -30.0, 3]].forEach(([x, z, n]) => table(x, z, n));
+    // pergola en bois : ses lames dessinent des ombres sur les dalles au couchant
+    {
+      const wood = std('#5A3A26', { roughness: 0.6 });
+      const PX = [-7.5, 0, 7.5], PZ = [-22.4, -28.4, -34.4];
+      PX.forEach((x) => PZ.forEach((z) => mesh(rbox(0.16, 3.0, 0.16, 0.02), wood, x, 1.5, z, terrace).castShadow = true));
+      PZ.forEach((z) => mesh(rbox(15.4, 0.22, 0.16, 0.02), wood, 0, 3.0, z, terrace).castShadow = true);
+      const slatGeo = new THREE.BoxGeometry(0.07, 0.12, 12.6);
+      const ns = 31;
+      const pslats = new THREE.InstancedMesh(slatGeo, wood, ns);
+      for (let i = 0; i < ns; i++) { dummy.position.set(-7.5 + i * 0.5, 3.17, -28.4); dummy.rotation.set(0, 0, 0); dummy.updateMatrix(); pslats.setMatrixAt(i, dummy.matrix); }
+      pslats.castShadow = true;
+      terrace.add(pslats);
+    }
+    // guirlande de lumières chaudes, accrochée en diagonale sous la pergola
     const bulbGeo = new THREE.SphereGeometry(0.045, 12, 8);
     const bulbM = new THREE.MeshBasicMaterial({ color: '#FFC27E' });
-    [[[-9, 3.2, -22.5], [9, 3.2, -24.5]], [[-9, 3.2, -30.5], [9, 3.2, -33.5]]].forEach(([a, b]) => {
-      [a, b].forEach(([x, y, z]) => mesh(new THREE.CylinderGeometry(0.05, 0.06, y, 10), bronze, x, y / 2, z, terrace));
-      const c = new THREE.QuadraticBezierCurve3(v3(...a), v3((a[0] + b[0]) / 2, 2.4, (a[2] + b[2]) / 2), v3(...b));
+    [[[-7.5, 2.85, -22.4], [7.5, 2.85, -28.4]], [[-7.5, 2.85, -28.4], [7.5, 2.85, -34.4]], [[7.5, 2.85, -22.4], [-7.5, 2.85, -28.4]]].forEach(([a, b]) => {
+      const c = new THREE.QuadraticBezierCurve3(v3(...a), v3((a[0] + b[0]) / 2, 2.35, (a[2] + b[2]) / 2), v3(...b));
       terrace.add(new THREE.Mesh(new THREE.TubeGeometry(c, 40, 0.006, 4), std('#1A1410')));
       const n = 22;
       const inst = new THREE.InstancedMesh(bulbGeo, bulbM, n);
@@ -1137,6 +1268,13 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(glowPts, 3));
       terrace.add(new THREE.Points(pg, new THREE.PointsMaterial({ map: glowTex, color: '#FFAA5C', size: 0.55, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })));
     });
+
+    // bornes lumineuses le long de la clôture
+    for (let x = -13; x <= 3; x += 4) {
+      mesh(rbox(0.14, 0.6, 0.14, 0.02), bronze, x, 0.3, -39.4, terrace);
+      mesh(new THREE.BoxGeometry(0.12, 0.06, 0.02), new THREE.MeshBasicMaterial({ color: '#FFC27E' }), x, 0.52, -39.32, terrace);
+      lightPool(x, -39.0, 0.9, 0.7, '#FFA45A', 0.3, 0.012, terrace);
+    }
 
     // jardinières basses le long de la terrasse
     [[-12.5, -23], [12.5, -23], [-12.5, -32], [12.5, -26]].forEach(([x, z]) => {
@@ -1337,6 +1475,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   return {
     scene, update, ready, clickables, anchors, dolphin, splash, ripple, setFill, state, POOL,
     stop: () => clearInterval(clockTimer),
+    setLowFx: (on) => { beams.forEach((b) => { b.visible = !on; }); },
   };
 }
 

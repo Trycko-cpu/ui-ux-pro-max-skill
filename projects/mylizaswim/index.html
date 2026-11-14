@@ -71,6 +71,18 @@
   <!-- Pastilles posées sur les objets du bassin -->
   <nav class="pins" id="pins" aria-label="Les éléments du bassin"></nav>
 
+  <!-- Progression en segments (mobile) -->
+  <nav class="progress" id="progress" aria-label="Étapes de la visite"></nav>
+
+  <!-- Message discret (appareil lent, etc.) -->
+  <div class="toast" id="toast" role="status" hidden>
+    <p id="toastText"></p>
+    <div class="toast-actions">
+      <button class="btn btn-sm btn-cta" id="toastYes" type="button">Version sans 3D</button>
+      <button class="btn btn-sm btn-ghost" id="toastNo" type="button">Continuer</button>
+    </div>
+  </div>
+
   <!-- Ligne d'eau de progression -->
   <nav class="rail" id="rail" aria-label="Parcours du bassin"></nav>
 
@@ -81,8 +93,10 @@
         <span class="mascot-avatar" aria-hidden="true">
           <svg viewBox="0 0 64 64"><defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9F4FF"/><stop offset=".55" stop-color="#A9BEFF"/><stop offset="1" stop-color="#5B6BF0"/></linearGradient></defs><circle cx="32" cy="32" r="31" fill="#2F39DA"/><path fill="url(#gl)" d="M10 40c6-1 9-5 13-10 5-6 12-11 22-12 3 0 6 0 9 1-4 1-7 3-9 6 3 2 4 6 3 10-2-3-4-4-6-4-3 5-9 10-17 11-6 1-11 0-15-2z"/><path fill="#D4713D" d="M8 41c3 0 6 1 8 3-4 1-7 0-9-1z"/></svg>
         </span>
-        <span class="mascot-name">Votre guide</span>
-        <span class="mascot-step" id="mascotStep">1 / 9</span>
+        <span class="mascot-titles">
+          <span class="mascot-name" id="mascotStep">Étape 1 sur 9</span>
+          <strong class="mascot-title" id="mascotTitle">Bienvenue</strong>
+        </span>
       </div>
       <p class="mascot-text" id="mascotText" aria-hidden="true"></p>
       <p class="sr-only" id="mascotLive" aria-live="polite"></p>
