@@ -672,3 +672,22 @@ html.js:not(.classic) .sheet { background: rgba(251, 248, 244, 0.96); }
 
 /* focus lisible sur fond sombre */
 .topbar :focus-visible, .pins :focus-visible, .rail :focus-visible, .mascot :focus-visible, .hero :focus-visible, .menu :focus-visible, .scroll-hint :focus-visible { outline-color: var(--peach); }
+
+/* ==================================================================
+   Sous l'eau : teinte, vignette et reflets mouvants par-dessus la scène
+================================================================== */
+.underwater-fx {
+  position: fixed; inset: 0; z-index: 5; pointer-events: none; opacity: 0;
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(150, 255, 240, 0.22), rgba(150, 255, 240, 0) 60%),
+    radial-gradient(140% 120% at 50% 50%, rgba(0, 40, 50, 0) 45%, rgba(0, 28, 38, 0.6) 100%);
+  transition: opacity 0.45s var(--ease-out);
+}
+.underwater-fx::after {
+  content: ""; position: absolute; inset: -10%;
+  background: repeating-linear-gradient(100deg, rgba(200, 255, 245, 0) 0 60px, rgba(200, 255, 245, 0.06) 60px 90px, rgba(200, 255, 245, 0) 90px 170px);
+  animation: sway 7s ease-in-out infinite alternate;
+}
+html.underwater .underwater-fx { opacity: 1; }
+html.classic .underwater-fx, html.no-js .underwater-fx { display: none; }
+@keyframes sway { from { transform: translateX(-3%) skewX(-4deg); } to { transform: translateX(3%) skewX(4deg); } }

@@ -4,23 +4,27 @@ Site vitrine immersif pour MyLizaSwim : Emmy, coach de natation à Bruxelles (Aq
 
 ## Le concept
 
-On arrive **face à un bassin de 3 couloirs**, dans un diorama 3D lumineux. Chaque objet du bassin est une porte vers une information :
+Une visite en trois lieux, guidée par un dauphin de verre :
 
-| # | Objet dans le bassin | Ouvre |
-|---|---|---|
-| 1 | Les 3 lanternes qui flottent | **Ma méthode** (Sensation · Expression · Application) |
-| 2 | La chaise de maître-nageur + parasol | **Votre coach** |
-| 3 | Les 3 plots de départ numérotés | **Quel nageur êtes-vous ?** (1 couloir = 1 profil) |
-| 4 | L'échelle + la planche | **Le premier cours** |
-| 5 | Le banc et ses piles de serviettes (1, 2, 3 = unité, carnet 5, carnet 10) | **Tarifs** (grille guidée) |
-| 6 | Le tableau d'affichage (heure en direct) | **Avis** |
-| 7 | La bouée de sauvetage | **FAQ** |
-| 8 | Vue du ciel sur le bassin | **Réserver** |
+1. **Le salon d'accueil** (bois, cuir cognac, velours marine, cheminée) : on arrive, on s'installe, on aperçoit le bassin à travers la verrière.
+2. **La piscine intérieure** (pierre, colonnes sombres, rubans LED chauds, alcôves avec transats) : chaque objet est une porte vers une information.
+3. **La terrasse** (dalles claires, fauteuils tressés, arbres, ciel bleu → orange) : fin de la visite, on prend contact.
 
-- **Pas besoin de défiler** : tout est cliquable depuis la vue d'ensemble (objets 3D, pastilles, menu, ligne d'eau à droite).
-- **Au défilement**, la caméra glisse sur un rail continu entre les objets, avec un aimant doux sur chaque étape (une molette = une étape ; un trackpad permet de « scrubber »).
-- **Le dauphin en cristal** (mascotte) nage d'étape en étape en sautant, et explique chaque fonction en français. Cliquez dessus : il fait une pirouette.
-- **Intro** (1re visite seulement) : le bassin se remplit, puis le dauphin plonge.
+| # | Où | Objet | Ouvre |
+|---|---|---|---|
+| 0 | Salon | vue sur la verrière | Accueil |
+| 1 | Piscine | 3 lanternes flottantes | **Ma méthode** (Sensation · Expression · Application) |
+| 2 | Piscine | chaise de maître-nageur | **Votre coach** |
+| 3 | Piscine | 3 plots numérotés | **Quel nageur êtes-vous ?** (1 couloir = 1 profil) |
+| 4 | **Sous l'eau** | échelle, planche vue d'en dessous | **Le premier cours** |
+| 5 | Piscine | banc et piles de serviettes (1, 5, 10) | **Tarifs** (grille guidée) |
+| 6 | Piscine | écran à gauche de la sortie | **Avis** |
+| 7 | Piscine | bouée à droite de la sortie | **FAQ** |
+| 8 | Terrasse | tables et fauteuils | **Prendre contact** |
+
+- **Pas besoin de défiler** : objets cliquables, pastilles, menu, ligne d'eau à droite.
+- **Au défilement**, la caméra glisse sur un rail continu, du salon à la piscine, plonge sous la surface à l'étape 4 (brouillard bleu, rayons de lumière, bulles, son étouffé si le son est activé), ressort, puis sort sur la terrasse.
+- **Le dauphin** est modélisé en sections elliptiques (melon, rostre, nageoires falciformes) et nage avec une ondulation dorso-ventrale calculée dans le shader. Entre deux étapes, il plonge, nage sous la surface, puis saute à l'arrivée ; à l'étape 4, il tourne autour de la caméra sous l'eau. Cliquez dessus : il fait une vrille.
 
 ## Lancer en local
 
@@ -62,7 +66,7 @@ index.html              tout le contenu (SEO, lecteurs d'écran, mode classique)
 assets/css/style.css    design system : tokens, panneaux, responsive, mode classique
 assets/js/app.js        contenu dynamique : étapes, tarifs, formulaire, menu, son
 assets/js/scene-app.js  expérience 3D : caméra, défilement, pastilles, dauphin, intro
-assets/js/world.js      le bassin en three.js (100 % procédural, aucun modèle 3D)
+assets/js/world.js      salon, piscine, terrasse et dauphin en three.js (100 % procédural)
 assets/img/             logo vectorisé (SVG)
 assets/fonts/           Jost (variable) + Instrument Serif, licence OFL
 vendor/three/           three.js r169 (MIT)

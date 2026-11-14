@@ -39,19 +39,19 @@ const PRICING = {
 const STATIONS = [
   {
     id: 'accueil', label: 'Accueil', cta: 'Commencer la visite',
-    cam: [0, 6.1, 8.2], look: [0, -1.5, -7.4], camM: [0, 12.5, 12.0], lookM: [0, -1.2, -6.9],
-    dolphin: [2.5, -3.2],
-    line: 'Bienvenue chez MyLizaSwim. Je vous fais visiter le bassin : touchez un élément, ou faites défiler pour avancer.',
+    cam: [1.6, 1.9, 13.3], look: [-0.4, 1.2, 3.0], camM: [0.8, 1.9, 13.6], lookM: [-0.6, 1.15, 3.0],
+    dolphin: [0, -3.0],
+    line: 'Bienvenue chez MyLizaSwim. Installez-vous, je vous fais visiter : faites défiler pour entrer dans le bassin.',
   },
   {
     id: 'methode', label: 'Ma méthode',
-    cam: [0, 2.9, -1.4], look: [0, -0.35, -7.8], camM: [0, 5.4, 2.6], lookM: [0, -0.7, -7.5],
+    cam: [0, 2.9, -1.4], look: [0, -0.35, -7.8], camM: [0, 5.0, 2.2], lookM: [0, -0.7, -7.5],
     dolphin: [0, -4.6],
     line: 'Ces trois lumières, c\'est la méthode d\'Emmy : Sensation, Expression, Application.',
   },
   {
     id: 'coach', label: 'Votre coach',
-    cam: [1.3, 2.6, -2.7], look: [5.7, 1.75, -7.7], camM: [0.6, 3.2, -1.8], lookM: [5.7, 1.6, -7.6],
+    cam: [1.2, 2.5, -3.2], look: [5.0, 1.6, -7.7], camM: [0.6, 3.0, -2.2], lookM: [5.0, 1.5, -7.6],
     dolphin: [2.5, -5.4],
     line: 'La chaise du maître-nageur, c\'est la place d\'Emmy. Elle aussi a appris à nager : découvrez son parcours.',
   },
@@ -62,34 +62,35 @@ const STATIONS = [
     line: 'Trois plots, trois couloirs : Aquababy, Enfants, Jeunes et adultes. Lequel est le vôtre ?',
   },
   {
+    // la caméra passe sous la surface : le dauphin fait sa ronde autour de l'échelle
     id: 'premier-cours', label: 'Le premier cours',
-    cam: [-0.3, 2.0, -0.4], look: [-3.3, -0.15, -3.95], camM: [0.4, 2.6, 0.6], lookM: [-3.2, -0.2, -4.0],
-    dolphin: [-2.5, -5.6],
-    line: 'L\'échelle et la planche : le tout premier pas. Voici comment se déroule le premier cours.',
+    cam: [-0.7, -0.9, -7.0], look: [-3.2, -0.62, -3.0], camM: [-0.5, -0.95, -7.6], lookM: [-3.1, -0.62, -3.1],
+    orbit: { c: [-2.5, -0.85, -3.7], r: 0.75 },
+    line: 'On plonge ! Le premier cours, c\'est un premier pas dans l\'eau, tout en douceur. Voici comment il se déroule.',
   },
   {
     id: 'tarifs', label: 'Tarifs',
-    cam: [2.9, 2.0, -9.6], look: [5.9, 0.55, -12.3], camM: [2.0, 2.9, -8.6], lookM: [5.9, 0.5, -12.3],
-    dolphin: [2.7, -11.3],
+    cam: [2.4, 2.0, -9.2], look: [5.0, 0.55, -12.3], camM: [1.8, 2.8, -8.4], lookM: [5.0, 0.5, -12.3],
+    dolphin: [2.6, -11.0],
     line: 'Une serviette, cinq, dix : sur le banc, trouvez la formule qui vous correspond.',
   },
   {
     id: 'avis', label: 'Avis',
-    cam: [0, 2.9, -10.9], look: [0, 1.95, -19.4], camM: [0, 3.2, -8.4], lookM: [0, 1.9, -19.4],
-    dolphin: [-2.5, -14.0],
-    line: 'Le tableau du bassin : ce qu\'en disent les familles et les élèves.',
+    cam: [-1.2, 1.9, -14.0], look: [-4.7, 1.85, -19.9], camM: [-0.6, 2.2, -12.6], lookM: [-4.7, 1.8, -19.9],
+    dolphin: [-2.5, -13.8],
+    line: 'Près de la sortie, l\'écran du bassin : ce qu\'en disent les familles et les élèves.',
   },
   {
     id: 'faq', label: 'Questions', pin: 'Questions fréquentes',
-    cam: [2.7, 2.1, -15.0], look: [6.3, 1.1, -17.0], camM: [2.2, 2.5, -14.6], lookM: [6.3, 1.05, -17.0],
-    dolphin: [2.5, -12.4],
+    cam: [1.4, 1.75, -15.4], look: [4.7, 1.45, -19.9], camM: [0.8, 2.0, -14.4], lookM: [4.7, 1.4, -19.9],
+    dolphin: [2.5, -14.2],
     line: 'Une question ? La bouée est là pour ça : les réponses aux questions les plus fréquentes.',
   },
   {
-    id: 'reserver', label: 'Réserver', cta: 'Réserver',
-    cam: [0, 15.5, -3.6], look: [0, 0, -8.4], camM: [0, 21, -3.0], lookM: [0, 0, -8.6],
-    dolphin: [0, -8.2],
-    line: 'Prêt·e à vous lancer ? Laissez vos coordonnées, Emmy vous recontacte rapidement.',
+    id: 'reserver', label: 'Prendre contact', cta: 'Prendre contact',
+    cam: [0.7, 1.7, -23.2], look: [-0.6, 0.7, -31.5], camM: [0.5, 2.0, -22.4], lookM: [-0.5, 0.7, -31.5],
+    dolphin: [0, -10.0],
+    line: 'Fin de la visite, sur la terrasse. Laissez vos coordonnées : Emmy vous recontacte rapidement.',
   },
 ];
 const N = STATIONS.length;
@@ -282,7 +283,7 @@ document.addEventListener('click', (e) => { if (e.target.closest('a[href="#"]'))
    Son (désactivé par défaut, synthétisé : aucun fichier audio)
 ================================================================== */
 const Sound = (() => {
-  let ctx, master, on = false;
+  let ctx, master, lp, on = false;
   function init() {
     ctx = new (window.AudioContext || window.webkitAudioContext)();
     master = ctx.createGain(); master.gain.value = 0; master.connect(ctx.destination);
@@ -292,7 +293,7 @@ const Sound = (() => {
     let last = 0;
     for (let i = 0; i < len; i++) { last = (last + 0.02 * (Math.random() * 2 - 1)) / 1.02; d[i] = last * 3.2; }
     const src = ctx.createBufferSource(); src.buffer = buf; src.loop = true;
-    const lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520;
+    lp = ctx.createBiquadFilter(); lp.type = 'lowpass'; lp.frequency.value = 520;
     const lfo = ctx.createOscillator(); lfo.frequency.value = 0.12;
     const lfoG = ctx.createGain(); lfoG.gain.value = 220;
     lfo.connect(lfoG).connect(lp.frequency);
@@ -329,7 +330,11 @@ const Sound = (() => {
     const g = ctx.createGain(); g.gain.value = 0.35;
     s.connect(bp).connect(g).connect(master); s.start(t);
   }
-  return { toggle, bloop, splash };
+  function setUnderwater(u) {
+    if (!ctx || !lp) return;
+    lp.frequency.setTargetAtTime(u ? 180 : 520, ctx.currentTime, 0.15);
+  }
+  return { toggle, bloop, splash, setUnderwater };
 })();
 const soundBtn = $('#soundBtn');
 soundBtn.addEventListener('click', () => {

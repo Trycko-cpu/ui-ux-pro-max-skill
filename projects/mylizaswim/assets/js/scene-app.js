@@ -88,8 +88,6 @@ export function start(ctx) {
     posCurve.getPoint(t, outP);
     lookCurve.getPoint(t, outL);
   };
-  const IP = new THREE.Vector3(0, 27, 22);
-  const IL = new THREE.Vector3(0, -1.2, -8);
 
   /* ---------- état ---------- */
   const S = {
@@ -387,65 +385,130 @@ export function start(ctx) {
   let mascotTimer = 0;
 
   /* ---------- dauphin ---------- */
-  const D = { x: 0, z: 0, yaw: 0, pitch: 0, roll: 0, jump: null, goal: -1, pendingGoal: null };
-  function placeDolphin(i) {
-    [D.x, D.z] = STATIONS[i].dolphin;
-    D.goal = i;
-    dolphin.root.position.set(D.x, world.state.level + 0.07, D.z);
+  const D = {
+    pos: new THREE.Vector3(), yaw: 0, pitch: 0, roll: 0,
+    mode: 'idle', path: null, trick: null, goal: -1, pendingGoal: null,
+    phase: 0, amp: 0.025, freq: 3, orbitA: 0,
+  };
+  const lvl = () => world.state.level;
+  const smooth = (a, b, x) => { const k = clamp((x - a) / (b - a), 0, 1); return k * k * (3 - 2 * k); };
+  function orbitPoint(i, a, out) {
+    const o = STATIONS[i].orbit;
+    return out.set(o.c[0] + Math.cos(a) * o.r, o.c[1] + Math.sin(a * 2) * 0.12, o.c[2] + Math.sin(a) * o.r);
   }
-  function jumpTo(x, z, { from = null, spin = false } = {}) {
-    const fx = from ? from[0] : D.x;
-    const fz = from ? from[1] : D.z;
-    const dist = Math.hypot(x - fx, z - fz);
-    D.jump = {
-      fx, fz, tx: x, tz: z, t: 0, spin, dist: Math.max(dist, 1e-3),
-      dur: spin ? 1.15 : clamp(0.9 + dist * 0.06, 1.0, 1.8),
-      h: spin ? 1.25 : clamp(0.75 + dist * 0.09, 0.95, 2.4),
+  function placeDolphin(i) {
+    D.goal = i; D.path = null; D.trick = null;
+    if (STATIONS[i].orbit) { D.mode = 'orbit'; D.orbitA = 0; orbitPoint(i, 0, D.pos); }
+    else { D.mode = 'idle'; const [x, z] = STATIONS[i].dolphin; D.pos.set(x, lvl() + 0.07, z); }
+    dolphin.root.position.copy(D.pos);
+  }
+  // trajet : plongée, nage sous la surface sur une courbe, puis saut à l'arrivée
+  function travelTo(i) {
+    const st = STATIONS[i];
+    const from = D.pos.clone();
+    const toOrbit = !!st.orbit;
+    let tx, ty, tz;
+    if (toOrbit) {
+      D.orbitA = Math.atan2(from.z - st.orbit.c[2], from.x - st.orbit.c[0]);
+      const q = orbitPoint(i, D.orbitA, new THREE.Vector3());
+      tx = q.x; ty = q.y; tz = q.z;
+    } else { [tx, tz] = st.dolphin; ty = lvl() + 0.07; }
+    const dx = tx - from.x, dz = tz - from.z;
+    const dist = Math.hypot(dx, dz);
+    const side = Math.random() < 0.5 ? -1 : 1;
+    const cx = clamp(from.x + dx / 2 - dz * 0.3 * side, -3.0, 3.0);
+    const cz = clamp(from.z + dz / 2 + dx * 0.3 * side, -15.2, -0.8);
+    D.path = {
+      fx: from.x, fy: from.y, fz: from.z, cx, cz, tx, ty, tz, t: 0, toOrbit, breached: false,
+      dur: clamp(1.5 + dist * 0.22, 1.9, 4.8), h: clamp(0.75 + dist * 0.06, 0.85, 1.5),
     };
-    if (dist > 0.3) D.yaw = Math.atan2(-(z - fz), x - fx);
-    world.splash(fx, fz, 24, 0.7);
+    D.mode = 'travel';
+    if (from.y > lvl() - 0.12) { world.splash(from.x, from.z, 16, 0.5); Sound.splash(); }
+  }
+  function pathPoint(p, u, out) {
+    const a = (1 - u) * (1 - u), b = 2 * (1 - u) * u, c = u * u;
+    const x = a * p.fx + b * p.cx + c * p.tx;
+    const z = a * p.fz + b * p.cz + c * p.tz;
+    const L = lvl();
+    const LEAP = 0.74;
+    let y;
+    if (p.toOrbit) y = lerp(L - 0.7 * Math.sin(Math.PI * 0.5 * Math.min(u / 0.6, 1)), p.ty, smooth(0.45, 1, u));
+    else if (u < LEAP) y = L - 0.72 * Math.sin(Math.PI * (u / LEAP));
+    else { const k = (u - LEAP) / (1 - LEAP); y = L + 4 * p.h * k * (1 - k) - 0.18 * k; }
+    if (p.fy < L - 0.2) y = lerp(p.fy, y, smooth(0, 0.3, u));
+    return out.set(x, y, z);
+  }
+  function trick() {
+    if (D.mode !== 'idle') return;
+    D.trick = { t: 0, dur: 1.25, x: D.pos.x, z: D.pos.z };
+    D.mode = 'trick';
+    world.splash(D.pos.x, D.pos.z, 18, 0.55);
     Sound.splash();
   }
-  const camXZ = new THREE.Vector3();
+  const tA = new THREE.Vector3(), tB = new THREE.Vector3(), dir = new THREE.Vector3();
+  function orient(d, dt, k) {
+    const hz = Math.hypot(d.x, d.z);
+    if (hz + Math.abs(d.y) < 1e-6) return;
+    const prev = D.yaw;
+    D.yaw = angleDamp(D.yaw, Math.atan2(-d.z, d.x), k, dt);
+    const turn = ((D.yaw - prev) % TAU + TAU + Math.PI) % TAU - Math.PI;
+    D.pitch = damp(D.pitch, Math.atan2(d.y, Math.max(hz, 1e-4)), k, dt);
+    D.roll = damp(D.roll, clamp(-turn / Math.max(dt, 1e-3) * 0.1, -0.55, 0.55), 4, dt);
+  }
   function updateDolphin(t, dt) {
-    const root = dolphin.root;
-    const lvl = world.state.level;
-    if (!intro && D.pendingGoal !== null && !D.jump && t >= D.pendingGoal.at) {
+    const L = lvl();
+    if (!intro && D.pendingGoal !== null && (D.mode === 'idle' || D.mode === 'orbit') && t >= D.pendingGoal.at) {
       const i = D.pendingGoal.i;
       D.pendingGoal = null;
-      if (i !== D.goal) {
-        D.goal = i;
-        const [x, z] = STATIONS[i].dolphin;
-        if (reduceMotion) { D.x = x; D.z = z; } else jumpTo(x, z);
-      }
+      if (i !== D.goal) { D.goal = i; if (reduceMotion) placeDolphin(i); else travelTo(i); }
     }
-    if (D.jump) {
-      const j = D.jump;
-      j.t += dt / j.dur;
-      const u = Math.min(j.t, 1);
-      D.x = lerp(j.fx, j.tx, u);
-      D.z = lerp(j.fz, j.tz, u);
-      root.position.set(D.x, lvl - 0.22 + 4 * j.h * u * (1 - u), D.z);
-      if (j.spin) { D.pitch = (1 - 2 * u) * 1.1; D.roll = easeIO(u) * TAU; }
-      else { D.pitch = Math.atan2(4 * j.h * (1 - 2 * u), j.dist) * 0.9; D.roll = 0; }
-      if (j.t >= 1) {
-        D.jump = null; D.roll = 0;
-        world.splash(D.x, D.z, 44, 1);
-        Sound.splash();
+    let amp = 0.022, freq = 3.2;
+    if (D.mode === 'travel') {
+      const p = D.path;
+      p.t += dt / p.dur;
+      const u = Math.min(p.t, 1);
+      pathPoint(p, u, D.pos);
+      pathPoint(p, Math.max(u - 0.01, 0), tA);
+      pathPoint(p, Math.min(u + 0.01, 1), tB);
+      orient(dir.subVectors(tB, tA), dt, 9);
+      amp = 0.07; freq = 10.5;
+      if (!p.toOrbit && !p.breached && u > 0.74 && D.pos.y > L) { p.breached = true; world.splash(D.pos.x, D.pos.z, 20, 0.6); }
+      if (p.t >= 1) {
+        D.path = null;
+        if (p.toOrbit) D.mode = 'orbit';
+        else { D.mode = 'idle'; world.splash(D.pos.x, D.pos.z, 40, 1); Sound.splash(); }
       }
+    } else if (D.mode === 'orbit') {
+      D.orbitA += dt * 0.75;
+      orbitPoint(D.goal, D.orbitA, D.pos);
+      orbitPoint(D.goal, D.orbitA + 0.06, tB);
+      orient(dir.subVectors(tB, D.pos), dt, 6);
+      amp = 0.055; freq = 7;
+    } else if (D.mode === 'trick') {
+      const tr = D.trick;
+      tr.t += dt / tr.dur;
+      const u = Math.min(tr.t, 1);
+      D.pos.set(tr.x, L - 0.15 + 4 * 1.2 * u * (1 - u), tr.z);
+      D.pitch = (1 - 2 * u) * 1.15;
+      D.roll = easeIO(u) * TAU;
+      amp = 0.06; freq = 9;
+      if (tr.t >= 1) { D.mode = 'idle'; D.trick = null; D.roll = 0; world.splash(tr.x, tr.z, 40, 1); Sound.splash(); }
     } else {
-      root.position.x = D.x; root.position.z = D.z;
-      root.position.y = damp(root.position.y, lvl + 0.07 + Math.sin(t * 1.7) * 0.035, 3, dt);
-      camXZ.copy(camera.position);
-      const yawCam = Math.atan2(-(camXZ.z - D.z), camXZ.x - D.x);
-      D.yaw = angleDamp(D.yaw, yawCam + 1.1, 2.2, dt);
+      D.pos.y = damp(D.pos.y, L + 0.07 + Math.sin(t * 1.7) * 0.035, 3, dt);
+      const yawCam = Math.atan2(-(camera.position.z - D.pos.z), camera.position.x - D.pos.x);
+      D.yaw = angleDamp(D.yaw, yawCam + 1.1, 2.0, dt);
       D.pitch = damp(D.pitch, 0.2 + Math.sin(t * 1.3) * 0.06, 3, dt);
       D.roll = damp(D.roll, Math.sin(t * 0.9) * 0.06, 3, dt);
     }
-    root.rotation.y = D.yaw;
+    D.amp = damp(D.amp, amp, 3, dt);
+    D.freq = damp(D.freq, freq, 3, dt);
+    D.phase += dt * D.freq;
+    dolphin.swim.uPhase.value = D.phase;
+    dolphin.swim.uAmp.value = D.amp;
+    dolphin.root.position.copy(D.pos);
+    dolphin.root.rotation.y = D.yaw;
     dolphin.pitch.rotation.z = D.pitch;
     dolphin.body.rotation.x = D.roll;
-    dolphin.tail.rotation.z = Math.sin(t * (D.jump ? 10 : 4.5)) * (D.jump ? 0.35 : 0.22);
   }
 
   /* ---------- picking ---------- */
@@ -492,7 +555,7 @@ export function start(ctx) {
     const hit = pick(e.clientX, e.clientY);
     if (!hit) { if (S.open !== null && !mob) closeSheet(); return; }
     if (hit.dolphin) {
-      if (!D.jump) jumpTo(D.x, D.z, { spin: true });
+      trick();
       say(EASTER[Math.floor(Math.random() * EASTER.length)]);
       Sound.bloop(1.5);
       return;
@@ -531,8 +594,9 @@ export function start(ctx) {
     return [(v.x * 0.5 + 0.5) * W, (-v.y * 0.5 + 0.5) * H, v.z];
   }
   function updatePins() {
-    const hideAll = S.open !== null || isMenuOpen() || !!intro;
-    const overview = S.cur < 0.4;
+    // pas de pastilles dans le salon ni sur la terrasse : on ne voit pas le bassin
+    const hideAll = S.open !== null || isMenuOpen() || !!intro || S.cur < 0.55 || S.cur > N - 1.45;
+    const overview = false;
     const atStation = Math.abs(S.cur - Math.round(S.cur)) < 0.18;
     const heroBox = !heroHidden ? hero.getBoundingClientRect() : null;
     const placed = [];
@@ -572,37 +636,25 @@ export function start(ctx) {
     });
   }
 
-  /* ---------- intro : le bassin se remplit ---------- */
+  /* ---------- intro : la caméra entre doucement dans le salon ---------- */
+  const INTRO_OFF = new THREE.Vector3(0.9, 0.35, 2.4);
   function startIntro() {
-    intro = { t: 0, speed: 1, dur: 3.9, hero: false, jump: false };
-    world.setFill(0);
-    dolphin.root.visible = false;
+    intro = { t: 0, speed: 1, dur: 2.8, hero: false };
     hero.classList.add('is-intro');
   }
   function fastForward() { if (intro) intro.speed = 4; }
   function finishIntro() {
     if (!intro) return;
     intro = null;
-    world.setFill(1);
     hero.classList.remove('is-intro');
-    if (!dolphin.root.visible) { dolphin.root.visible = true; placeDolphin(Math.round(S.target)); }
     try { sessionStorage.setItem('mls-intro', '1'); } catch { /* navigation privée */ }
     setMascot(Math.round(S.cur));
     chrome();
   }
   function stepIntro(dt) {
     intro.t += dt * intro.speed;
-    const t = intro.t;
-    world.setFill(easeOut(clamp((t - 0.2) / 2.4, 0, 1)));
-    if (!intro.hero && t > 1.7) { intro.hero = true; hero.classList.remove('is-intro'); }
-    if (!intro.jump && t > 2.45) {
-      intro.jump = true;
-      dolphin.root.visible = true;
-      const [x, z] = STATIONS[0].dolphin;
-      D.x = x - 2.0; D.z = z - 2.4; D.goal = 0;
-      jumpTo(x, z, { from: [D.x, D.z] });
-    }
-    if (t >= intro.dur) finishIntro();
+    if (!intro.hero && intro.t > 0.7) { intro.hero = true; hero.classList.remove('is-intro'); }
+    if (intro.t >= intro.dur) finishIntro();
   }
 
   /* ---------- caméra ---------- */
@@ -610,15 +662,14 @@ export function start(ctx) {
   const right = new THREE.Vector3(), up = new THREE.Vector3();
   const view = { x: 0, y: 0 };
   function frameOffset(i) {
-    if (!mob) return i === 0 ? [-0.15, 0.02] : [0, 0];
-    return i === 0 ? [0, -0.13] : [0, 0.07];
+    if (!mob) return i === 0 ? [-0.12, 0] : [0, 0];
+    return i === 0 ? [0, -0.1] : [0, 0.07];
   }
   function updateCamera(t, dt) {
     if (intro) {
-      const k = easeIO(clamp(intro.t / 3.4, 0, 1));
-      stationPose(0, P0, L0);
-      P.lerpVectors(IP, P0, k);
-      L.lerpVectors(IL, L0, k);
+      const k = easeOut(clamp(intro.t / 2.6, 0, 1));
+      stationPose(0, P0, L);
+      P.copy(P0).addScaledVector(INTRO_OFF, 1 - k);
     } else {
       stationPose(S.cur, P, L);
     }
@@ -638,7 +689,6 @@ export function start(ctx) {
     const f = Math.floor(S.cur), fr = S.cur - f;
     const a = frameOffset(f), b = frameOffset(Math.min(f + 1, N - 1));
     let ox = lerp(a[0], b[0], fr), oy = lerp(a[1], b[1], fr);
-    if (intro) ox = lerp(0, ox, clamp(intro.t / 3.4, 0, 1));
     if (S.open !== null) {
       if (!mob) ox += (sheetW + 12) / (2 * W);
       else {
@@ -687,14 +737,20 @@ export function start(ctx) {
 
   const clock = new THREE.Clock();
   let raf = 0;
+  let uwShown = false;
   function frame() {
     raf = requestAnimationFrame(frame);
     const dt = Math.min(clock.getDelta(), 1 / 20);
     const t = clock.elapsedTime;
     step(t, dt);
-    world.update(t, dt);
     updateCamera(t, dt);
+    world.update(t, dt, camera);
     updateDolphin(t, dt);
+    if (world.state.underwater !== uwShown) {
+      uwShown = world.state.underwater;
+      html.classList.toggle('underwater', uwShown);
+      Sound.setUnderwater?.(uwShown);
+    }
     // survol : petit « pop » de l'objet
     world.clickables.forEach((c) => {
       const target = hovered && hovered.root === c.root ? 1.06 : 1;
@@ -753,6 +809,7 @@ export function start(ctx) {
     hero.inert = false;
     mascot.classList.add('is-hidden');
     scrollHint.classList.add('is-hidden');
+    html.classList.remove('underwater');
     if (location.hash) setHash('', false);
   }
 
