@@ -21,7 +21,7 @@ const angleDamp = (a, b, k, dt) => {
 const esc = (s) => s.replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
 
 export function start(ctx) {
-  const { STATIONS, SUBPINS, EASTER, Sound, selectTab, setProfile, closeMenu, isMenuOpen, toClassic } = ctx;
+  const { STATIONS, SUBPINS, EASTER, Sound, selectTab, closeMenu, isMenuOpen, toClassic } = ctx;
   const ac = new AbortController();
   const on = (target, type, fn, opts = {}) => target.addEventListener(type, fn, { ...opts, signal: ac.signal });
   // dans un cadre (aperçu, artefact), on ne touche pas à l'historique du parent
@@ -101,6 +101,8 @@ export function start(ctx) {
   };
   let intro = null;
   let W = innerWidth, H = innerHeight;
+  let baseFov = 40;
+  const fovAt = (i) => { const st = STATIONS[i]; return (mob ? st.fovM : st.fov) || baseFov; };
   let sheetW = 0, sheetH = 0;
 
   function resize() {
@@ -108,7 +110,8 @@ export function start(ctx) {
     renderer.setSize(W, H, false);
     const a = W / H;
     camera.aspect = a;
-    camera.fov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(0.647 / a)), 38, 68);
+    baseFov = clamp(THREE.MathUtils.radToDeg(2 * Math.atan(0.647 / a)), 38, 68);
+    camera.fov = baseFov;
     camera.updateProjectionMatrix();
     const m = isMobile();
     if (m !== mob || !posCurve) { mob = m; buildCurves(); }
@@ -226,7 +229,6 @@ export function start(ctx) {
       return;
     }
     const i = idxOf(go.dataset.go);
-    if (go.dataset.profile) setProfile(go.dataset.profile, go.dataset.pack);
     if (go.hasAttribute('data-open')) {
       if (S.open !== null) { openSheet(i); goTo(i); } else goTo(i, { open: true });
     } else {
@@ -251,7 +253,9 @@ export function start(ctx) {
     sheet.setAttribute('aria-labelledby', panel.getAttribute('aria-labelledby'));
     S.open = i;
     sheetBody.scrollTop = 0;
-    $('#sheetCount').textContent = `${String(i).padStart(2, '0')} / ${String(N - 1).padStart(2, '0')}`;
+    sheet.classList.toggle('is-blue', panel.classList.contains('panel-blue'));
+    // la fiche épouse son contenu : on remesure pour recadrer la scène au-dessus / à côté
+    requestAnimationFrame(() => { sheetW = sheet.offsetWidth; sheetH = sheet.offsetHeight; });
     const prev = $('#sheetPrev'), next = $('#sheetNext');
     prev.hidden = i <= 1; next.hidden = i >= N - 1;
     if (i > 1) { prev.querySelector('span').textContent = STATIONS[i - 1].label; prev.onclick = () => { openSheet(i - 1); goTo(i - 1); }; }
@@ -373,22 +377,15 @@ export function start(ctx) {
   function measureMascot() { mascotH = mascotCard.offsetHeight || mascotH; mascotW = mascot.offsetWidth || mascotW; }
   function say(text) {
     mascotLive.textContent = text;
-    clearInterval(typeTimer);
-    if (reduceMotion) { mascotText.textContent = text; measureMascot(); return; }
-    let i = 0;
-    mascotText.innerHTML = '<span class="caret"></span>';
-    typeTimer = setInterval(() => {
-      i += 2;
-      mascotText.innerHTML = esc(text.slice(0, i)) + (i < text.length ? '<span class="caret"></span>' : '');
-      measureMascot();
-      if (i >= text.length) clearInterval(typeTimer);
-    }, 22);
+    mascotText.textContent = text;
+    mascotText.classList.remove('is-fade'); void mascotText.offsetWidth; mascotText.classList.add('is-fade');
+    measureMascot();
   }
   function setMascot(i) {
     const st = STATIONS[i];
     S.shown = i;
     say(st.line);
-    $('#mascotStep').textContent = `Étape ${i + 1} sur ${N}`;
+    $('#mascotStep').textContent = `${i + 1} sur ${N}`;
     $('#mascotTitle').textContent = st.title || st.label;
     mascotOpen.textContent = st.cta || 'Découvrir';
     $('#prevBtn').disabled = i === 0;
@@ -622,6 +619,7 @@ export function start(ctx) {
     const overview = false;
     const atStation = Math.abs(S.cur - Math.round(S.cur)) < 0.18;
     const heroBox = !heroHidden ? hero.getBoundingClientRect() : null;
+    const cardBox = !mascot.classList.contains('is-hidden') ? mascotCard.getBoundingClientRect() : null;
     const placed = [];
     pins.forEach((p) => {
       let state = 'off';
@@ -629,12 +627,15 @@ export function start(ctx) {
         if (p.isSub) state = atStation && Math.round(S.cur) === p.station ? 'on' : 'off';
         else if (overview) state = 'on';
         else if (p.station === S.nearest) state = SUBPINS[p.key] && atStation ? 'off' : 'current';
-        else state = S.cur > N - 1.5 ? 'off' : 'dim';
+        else state = 'off'; // une seule pastille principale à la fois : la vue reste nette
       }
       let [sx, sy, sz] = project(p.pos);
       let x0 = sx - 22;
       if (sz > 1 || sx < 20 || sx > W - 20 || sy < 70 || sy > H - 20) state = 'off';
       if (heroBox && state !== 'off' && sx > heroBox.left - 20 && sx < heroBox.right && sy > heroBox.top && sy < heroBox.bottom + 10) state = 'off';
+      if (mob && state === 'dim') state = 'off';
+      if (state !== 'off' && sy < (mob ? 112 : 92)) state = 'off';
+      if (state !== 'off' && cardBox && sx > cardBox.left - 30 && sx < cardBox.right + 10 && sy > cardBox.top - 30 && sy < cardBox.bottom + 10) state = 'off';
       const hov = hoverKey === p || (hovered && !hovered.dolphin && hovered.station === p.key && (!p.isSub ? !hovered.sub || !SUBPINS[p.key] : hovered.sub === p.sub));
       if (state !== p.vis) {
         p.vis = state;
@@ -720,6 +721,8 @@ export function start(ctx) {
         oy = (H / 2 - (top + (bottom - top) * 0.55)) / H;
       }
     }
+    const fov = intro ? fovAt(0) : lerp(fovAt(f), fovAt(Math.min(f + 1, N - 1)), fr);
+    if (Math.abs(camera.fov - fov) > 0.01) camera.fov = fov;
     view.x = damp(view.x, ox, 4.5, dt);
     view.y = damp(view.y, oy, 4.5, dt);
     camera.setViewOffset(W, H, view.x * W, view.y * H, W, H);

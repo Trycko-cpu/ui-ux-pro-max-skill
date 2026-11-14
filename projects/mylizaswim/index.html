@@ -3,16 +3,15 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <title>MyLizaSwim · Cours de natation Aquababy, enfants &amp; adultes</title>
-  <meta name="description" content="Se sentir libre dans l'eau. Cours de natation personnalisés avec MyLizaSwim : Aquababy dès 3 mois, enfants, ados et adultes, même quand on a peur de l'eau. Un suivi à votre rythme.">
+  <title>MyLizaSwim · Cours de natation à Bruxelles</title>
+  <meta name="description" content="Se sentir libre dans l'eau. Cours de natation particuliers avec Emmy, maître-nageuse à Bruxelles : bébés nageurs, enfants, ados et adultes, même quand on a peur de l'eau.">
   <meta name="theme-color" content="#1A120D">
   <meta property="og:type" content="website">
   <meta property="og:title" content="MyLizaSwim · Se sentir libre dans l'eau">
-  <meta property="og:description" content="Apprendre à nager et prendre confiance en soi, à votre rythme. Aquababy, enfants, ados et adultes.">
+  <meta property="og:description" content="Cours de natation particuliers à Bruxelles, au bassin ou chez vous. Solo, duo ou trio.">
   <meta property="og:locale" content="fr_FR">
   <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
-  <link rel="preload" href="assets/fonts/jost-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
-  <link rel="preload" href="assets/fonts/instrument-serif-latin-400-italic.woff2" as="font" type="font/woff2" crossorigin>
+  <link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
   <link rel="stylesheet" href="assets/css/style.css">
   <script>
     document.documentElement.classList.remove('no-js'); document.documentElement.classList.add('js');
@@ -30,7 +29,8 @@
       "@context": "https://schema.org",
       "@type": "SportsActivityLocation",
       "name": "MyLizaSwim",
-      "description": "Cours de natation personnalisés : Aquababy (3 mois – 1 an), enfants (1 – 9 ans), jeunes (9 – 18 ans) et adultes.",
+      "description": "Cours de natation particuliers à Bruxelles avec Maliza Grace-Emmy, maître-nageuse : bébés nageurs, enfants, ados et adultes.",
+      "areaServed": "Bruxelles",
       "sport": "Natation"
     }
   </script>
@@ -40,11 +40,7 @@
 
   <!-- Écran de chargement -->
   <div class="loader" id="loader" aria-hidden="true">
-    <div class="loader-mark">
-      <img src="assets/img/logo-mark.svg" alt="" width="96" height="96">
-      <span class="loader-wave"></span>
-    </div>
-    <p class="loader-text">Ouverture du bassin<span class="loader-dots"></span></p>
+    <img class="loader-mark" src="assets/img/logo-mark.svg" alt="" width="72" height="72">
     <div class="loader-bar"><span id="loaderBar"></span></div>
   </div>
 
@@ -54,21 +50,21 @@
   <!-- Barre du haut -->
   <header class="topbar">
     <a class="brand" href="#accueil" data-go="accueil" aria-label="MyLizaSwim, retour à l'accueil">
-      <img class="brand-mark" src="assets/img/logo-mark.svg" alt="" width="44" height="44">
-      <img class="brand-word brand-word-light" src="assets/img/logo-word-white.svg" alt="" width="88" height="35">
+      <img class="brand-mark" src="assets/img/logo-mark.svg" alt="" width="40" height="40">
+      <img class="brand-word" src="assets/img/logo-word-white.svg" alt="" width="84" height="33">
     </a>
     <div class="topbar-actions">
       <button class="icon-btn" id="soundBtn" type="button" aria-pressed="false" aria-label="Activer le son de l'eau">
         <svg viewBox="0 0 24 24" aria-hidden="true"><path class="snd-on" d="M4 9v6h4l5 4V5L8 9H4z"/><path class="snd-waves" d="M16 8.5a5 5 0 0 1 0 7M18.5 6a8.5 8.5 0 0 1 0 12"/><path class="snd-off" d="M16.5 9.5l5 5m0-5l-5 5"/></svg>
       </button>
       <button class="icon-btn" id="menuBtn" type="button" aria-expanded="false" aria-controls="menu" aria-label="Ouvrir le menu">
-        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8h16M4 16h11"/></svg>
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 9h14M5 15h14"/></svg>
       </button>
       <a class="btn btn-cta btn-sm" href="#reserver" data-go="reserver" data-open>Réserver</a>
     </div>
   </header>
 
-  <!-- Pastilles posées sur les objets du bassin -->
+  <!-- Pastilles posées sur les objets -->
   <nav class="pins" id="pins" aria-label="Les éléments du bassin"></nav>
 
   <!-- Progression en segments (mobile) -->
@@ -79,32 +75,32 @@
     <p id="toastText"></p>
     <div class="toast-actions">
       <button class="btn btn-sm btn-cta" id="toastYes" type="button">Version sans 3D</button>
-      <button class="btn btn-sm btn-ghost" id="toastNo" type="button">Continuer</button>
+      <button class="btn btn-sm btn-glass" id="toastNo" type="button">Continuer</button>
     </div>
   </div>
 
-  <!-- Ligne d'eau de progression -->
-  <nav class="rail" id="rail" aria-label="Parcours du bassin"></nav>
+  <!-- Progression (desktop) -->
+  <nav class="rail" id="rail" aria-label="Parcours"></nav>
 
-  <!-- La mascotte -->
+  <!-- Le guide -->
   <div class="mascot" id="mascot">
     <div class="mascot-card">
       <div class="mascot-head">
         <span class="mascot-avatar" aria-hidden="true">
-          <svg viewBox="0 0 64 64"><defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9F4FF"/><stop offset=".55" stop-color="#A9BEFF"/><stop offset="1" stop-color="#5B6BF0"/></linearGradient></defs><circle cx="32" cy="32" r="31" fill="#2F39DA"/><path fill="url(#gl)" d="M10 40c6-1 9-5 13-10 5-6 12-11 22-12 3 0 6 0 9 1-4 1-7 3-9 6 3 2 4 6 3 10-2-3-4-4-6-4-3 5-9 10-17 11-6 1-11 0-15-2z"/><path fill="#D4713D" d="M8 41c3 0 6 1 8 3-4 1-7 0-9-1z"/></svg>
+          <svg viewBox="0 0 64 64"><defs><linearGradient id="gl" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#E9F4FF"/><stop offset=".55" stop-color="#A9BEFF"/><stop offset="1" stop-color="#5B6BF0"/></linearGradient></defs><circle cx="32" cy="32" r="31" fill="#2F39DA"/><path fill="url(#gl)" d="M10 40c6-1 9-5 13-10 5-6 12-11 22-12 3 0 6 0 9 1-4 1-7 3-9 6 3 2 4 6 3 10-2-3-4-4-6-4-3 5-9 10-17 11-6 1-11 0-15-2z"/></svg>
         </span>
         <span class="mascot-titles">
-          <span class="mascot-name" id="mascotStep">Étape 1 sur 9</span>
+          <span class="mascot-step" id="mascotStep">1 sur 9</span>
           <strong class="mascot-title" id="mascotTitle">Bienvenue</strong>
         </span>
       </div>
       <p class="mascot-text" id="mascotText" aria-hidden="true"></p>
       <p class="sr-only" id="mascotLive" aria-live="polite"></p>
       <div class="mascot-actions">
-        <button class="btn btn-primary btn-sm" id="mascotOpen" type="button">Découvrir</button>
+        <button class="btn btn-light btn-sm" id="mascotOpen" type="button">Découvrir</button>
         <div class="mascot-nav">
-          <button class="icon-btn icon-btn-sm" id="prevBtn" type="button" aria-label="Élément précédent"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
-          <button class="icon-btn icon-btn-sm" id="nextBtn" type="button" aria-label="Élément suivant"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+          <button class="icon-btn icon-btn-sm" id="prevBtn" type="button" aria-label="Étape précédente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+          <button class="icon-btn icon-btn-sm" id="nextBtn" type="button" aria-label="Étape suivante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
         </div>
       </div>
     </div>
@@ -112,279 +108,209 @@
 
   <div class="scroll-hint" id="scrollHint" aria-hidden="true">
     <span class="scroll-hint-icon"><span></span></span>
-    <span class="scroll-hint-text"><span class="only-desktop">Faites défiler pour plonger</span><span class="only-touch">Glissez vers le haut pour plonger</span></span>
+    <span><span class="only-desktop">Faites défiler pour entrer</span><span class="only-touch">Glissez vers le haut pour entrer</span></span>
   </div>
 
   <main id="contenu">
     <!-- ACCUEIL -->
     <section class="hero" id="accueil" aria-labelledby="hero-title">
-      <p class="eyebrow">Bienvenue chez MyLizaSwim</p>
-      <h1 id="hero-title">Se sentir <em>libre</em><br>dans l'eau.</h1>
-      <p class="hero-lead">Apprendre à nager et prendre confiance en soi n'a jamais été aussi simple. Des cours particuliers à votre rythme, à Bruxelles.</p>
+      <p class="eyebrow">MyLizaSwim · Bruxelles</p>
+      <h1 id="hero-title">Se sentir libre<br>dans l'eau.</h1>
+      <p class="hero-lead">Des cours de natation particuliers, attentifs et à votre rythme. Pour les bébés, les enfants, et les adultes qui n'ont jamais osé.</p>
       <div class="hero-actions">
-        <a class="btn btn-cta" href="#reserver" data-go="reserver" data-open>Réserver le premier cours</a>
-        <a class="btn btn-ghost" href="#methode" data-go="methode" data-tour>Plonger dans le bassin <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14m0 0l-6-6m6 6l6-6"/></svg></a>
+        <a class="btn btn-cta" href="#reserver" data-go="reserver" data-open>Réserver un cours</a>
+        <a class="link link-light" href="#methode" data-go="methode" data-tour>Entrer dans le bassin</a>
       </div>
-      <ul class="hero-tags" aria-label="Pour qui">
-        <li>Aquababy dès 3 mois</li><li>Enfants</li><li>Ados</li><li>Adultes</li>
-      </ul>
     </section>
 
-    <!-- Feuille d'information (dialogue en mode 3D, sections empilées en mode classique) -->
+    <!-- Fiches : dialogue en mode 3D, page empilée en mode classique -->
     <div class="sheet" id="sheet">
       <div class="sheet-bar">
         <span class="sheet-handle" aria-hidden="true"></span>
-        <span class="sheet-count" id="sheetCount"></span>
-        <button class="icon-btn" id="sheetClose" type="button" aria-label="Fermer et revenir au bassin">
-          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+        <button class="sheet-close" id="sheetClose" type="button" aria-label="Fermer la fiche">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M7 7l10 10M17 7L7 17"/></svg>
         </button>
       </div>
       <div class="sheet-body" id="sheetBody">
 
-        <!-- 1 · MA MÉTHODE -->
+        <!-- MA MÉTHODE -->
         <section class="panel" id="methode" aria-labelledby="methode-title">
-          <p class="eyebrow">01 · Ma méthode</p>
-          <h2 id="methode-title">Sensation. Expression. <em>Application.</em></h2>
-          <p class="lead">La natation est un sport complet : elle fait travailler à la fois le psychomoteur, le psychologique et le physique. Ma méthode développe chacune de ces dimensions en mêlant rythme, développement personnel, discipline… et beaucoup de fun.</p>
-          <ol class="pillars">
-            <li class="pillar pillar-orange" id="sensation">
-              <span class="pillar-ring" aria-hidden="true"></span>
-              <div><h3>Sensation</h3><p>Être plus connecté·e à votre corps et à ce qu'il ressent dans l'eau.</p></div>
-            </li>
-            <li class="pillar pillar-white" id="expression">
-              <span class="pillar-ring" aria-hidden="true"></span>
-              <div><h3>Expression</h3><p>Mieux exprimer ce que vous ressentez, vos appréhensions comme vos envies, pour avancer ensemble.</p></div>
-            </li>
-            <li class="pillar pillar-blue" id="application">
-              <span class="pillar-ring" aria-hidden="true"></span>
-              <div><h3>Application</h3><p>Mettre en pratique les techniques, pas à pas, pour évoluer avec aisance.</p></div>
-            </li>
+          <p class="eyebrow">Ma méthode</p>
+          <h2 id="methode-title">L'écoute avant tout.</h2>
+          <p class="lead">Il n'existe pas une seule façon d'apprendre à nager. Chacun avance à son rythme, en trois temps.</p>
+          <ol class="trio">
+            <li id="sensation"><span class="dot dot-orange" aria-hidden="true"></span><h3>Sensation</h3><p>Ressentir son corps dans l'eau.</p></li>
+            <li id="expression"><span class="dot dot-amber" aria-hidden="true"></span><h3>Expression</h3><p>Dire ses peurs comme ses envies.</p></li>
+            <li id="application"><span class="dot dot-blue" aria-hidden="true"></span><h3>Application</h3><p>Passer à la pratique, pas à pas.</p></li>
           </ol>
-          <blockquote class="quote">
-            <p>Un milieu qui paraît d'abord hostile finit par devenir votre meilleur allié&nbsp;: <strong>l'eau.</strong></p>
-          </blockquote>
-          <ul class="values" aria-label="Nos valeurs">
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 21s-7-4.4-9.3-9A5.2 5.2 0 0 1 12 6.6 5.2 5.2 0 0 1 21.3 12C19 16.6 12 21 12 21z"/></svg>Accompagnement</li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.4 8.6-7 10-3.6-1.4-7-5-7-10V6l7-3z"/><path d="M9 12l2 2 4-4"/></svg>Sécurité</li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 21V4m0 0h11l-2 4 2 4H5"/></svg>Dépassement de soi</li>
-            <li><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v3m0 12v3M3 12h3m12 0h3M5.6 5.6l2.1 2.1m8.6 8.6l2.1 2.1m0-12.8l-2.1 2.1m-8.6 8.6l-2.1 2.1"/></svg>Fun</li>
-          </ul>
+          <p class="values">Écoute, patience, sécurité, adaptabilité, rigueur, bienveillance.</p>
         </section>
 
-        <!-- 2 · VOTRE COACH -->
+        <!-- VOTRE COACH -->
         <section class="panel" id="coach" aria-labelledby="coach-title">
-          <p class="eyebrow">02 · Votre coach</p>
-          <h2 id="coach-title">Moi aussi, un jour, <em>j'ai appris à nager.</em></h2>
-          <figure class="coach-photo" data-todo="Photo de profil de la coach (format portrait, 1200 × 1500 px mini)">
-            <div class="coach-photo-ph" aria-hidden="true"><img src="assets/img/logo-mark.svg" alt="" width="80" height="80"></div>
-            <figcaption><strong>Emmy</strong><span>Coach &amp; fondatrice de MyLizaSwim · Bruxelles</span></figcaption>
-          </figure>
-          <p>J'ai découvert mon métier à travers les enfants. Les accompagner dans leurs premiers pas dans l'eau m'a fait réaliser à quel point l'eau avait un impact considérable sur leur évolution.</p>
-          <p>J'ai ensuite moi-même appris à nager : perfectionner ma technique, découvrir de nouvelles sensations physiques, créer de nouvelles connexions. Ce chemin m'a aussi permis de mieux comprendre mes propres pensées limitantes, et de développer une pédagogie adaptée à l'apprentissage chez l'adulte.</p>
-          <ul class="creds" aria-label="Diplômes et certifications" data-todo="Diplômes réels à renseigner (ex. BPJEPS AAN, BNSSA, formation bébés nageurs)">
-            <li>Diplôme d'État · à compléter</li>
-            <li>Sécurité &amp; sauvetage · à compléter</li>
-            <li>Spécialité bébés nageurs · à compléter</li>
+          <figure class="portrait"><img src="assets/img/emmy.jpg" alt="Emmy, maître-nageuse, souriante au bord du bassin" width="600" height="450" loading="lazy" decoding="async"></figure>
+          <p class="eyebrow">Votre coach</p>
+          <h2 id="coach-title">Maliza Grace-Emmy.</h2>
+          <p class="lead">Maître-nageuse et monitrice de natation. Elle a découvert son métier auprès des enfants, puis a elle-même appris à nager.</p>
+          <ul class="specs">
+            <li><strong>2022</strong><span>enseigne depuis</span></li>
+            <li><strong>4</strong><span>publics, des bébés aux adultes</span></li>
+            <li><strong>2</strong><span>milieux, public et privé</span></li>
           </ul>
+          <blockquote class="pull">« Apprendre à nager, c'est aussi apprendre à comprendre son corps et à apprivoiser l'eau. »</blockquote>
         </section>
 
-        <!-- 3 · QUEL NAGEUR ÊTES-VOUS ? -->
+        <!-- POUR QUI -->
         <section class="panel" id="nageurs" aria-labelledby="nageurs-title">
-          <p class="eyebrow">03 · Quel nageur êtes-vous ?</p>
-          <h2 id="nageurs-title">Chacun son couloir, <em>chacun son rythme.</em></h2>
-          <div class="tabs" role="tablist" aria-label="Choisissez votre couloir">
-            <button role="tab" id="tab-aquababy" aria-controls="lane-aquababy" aria-selected="true">Aquababy</button>
-            <button role="tab" id="tab-enfants" aria-controls="lane-enfants" aria-selected="false" tabindex="-1">Enfants</button>
-            <button role="tab" id="tab-adultes" aria-controls="lane-adultes" aria-selected="false" tabindex="-1">Jeunes &amp; adultes</button>
+          <p class="eyebrow">Pour qui ?</p>
+          <h2 id="nageurs-title">Chacun son couloir.</h2>
+          <div class="lanes">
+            <article class="lane-card" id="lane-aquababy"><span class="lane-num">1</span><div><h3>Bébés nageurs</h3><p class="lane-age">3 mois à 1 an</p><p>Apprivoiser l'eau, les premiers réflexes.</p></div></article>
+            <article class="lane-card" id="lane-enfants"><span class="lane-num">2</span><div><h3>Enfants</h3><p class="lane-age">1 à 9 ans</p><p>Les premiers déplacements, puis nager seul.</p></div></article>
+            <article class="lane-card" id="lane-adultes"><span class="lane-num">3</span><div><h3>Ados et adultes</h3><p class="lane-age">9 ans et plus</p><p>Aisance, respiration, technique. Il n'est jamais trop tard.</p></div></article>
           </div>
-          <article class="lane" id="lane-aquababy" role="tabpanel" aria-labelledby="tab-aquababy">
-            <header class="lane-head"><span class="lane-n">1</span><div><h3>Aquababy</h3><p class="lane-age">3 mois – 1 an</p></div></header>
-            <ul class="checks">
-              <li>Apprivoiser l'eau</li>
-              <li>Réflexes de secours</li>
-            </ul>
-            <a class="btn btn-primary" href="#reserver" data-go="reserver" data-open data-profile="aquababy">Réserver un premier cours Aquababy</a>
-          </article>
-          <article class="lane" id="lane-enfants" role="tabpanel" aria-labelledby="tab-enfants" hidden>
-            <header class="lane-head"><span class="lane-n">2</span><div><h3>Enfants</h3><p class="lane-age">1 – 9 ans</p></div></header>
-            <ul class="checks">
-              <li>Apprivoiser l'eau</li>
-              <li>Réflexes de secours</li>
-              <li>Les premiers déplacements</li>
-              <li>Nager seul</li>
-            </ul>
-            <a class="btn btn-primary" href="#reserver" data-go="reserver" data-open data-profile="enfant">Réserver un premier cours Enfant</a>
-          </article>
-          <article class="lane" id="lane-adultes" role="tabpanel" aria-labelledby="tab-adultes" hidden>
-            <header class="lane-head"><span class="lane-n">3</span><div><h3>Jeunes &amp; adultes</h3><p class="lane-age">Jeunes 9 – 18 ans · Adultes 18 ans et +</p></div></header>
-            <ul class="checks">
-              <li>Aisance dans l'eau</li>
-              <li>Déplacements</li>
-              <li>Respiration &amp; technique</li>
-            </ul>
-            <a class="btn btn-primary" href="#reserver" data-go="reserver" data-open data-profile="adulte">Réserver un premier cours</a>
-          </article>
+          <a class="btn btn-cta" href="#reserver" data-go="reserver" data-open>Réserver un premier cours</a>
         </section>
 
-        <!-- 4 · LE PREMIER COURS -->
+        <!-- LE PREMIER COURS -->
         <section class="panel" id="premier-cours" aria-labelledby="premier-title">
-          <p class="eyebrow">04 · Le premier cours</p>
-          <h2 id="premier-title">Un premier pas, <em>tout en douceur.</em></h2>
-          <p class="lead">Le premier cours est avant tout une prise de contact : vous faites connaissance avec votre coach, et on fait le point ensemble sur vos objectifs.</p>
-          <ol class="steps">
-            <li><span class="step-n">1</span><div><h3>Faire connaissance</h3><p>Vous découvrez votre coach, et vous me racontez ce que vous attendez de l'eau.</p></div></li>
-            <li><span class="step-n">2</span><div><h3>Analyser votre niveau</h3><p>Une analyse complète de votre niveau réel, dans l'eau, sans pression.</p></div></li>
-            <li><span class="step-n">3</span><div><h3>Construire votre programme</h3><p>Nous confirmons ensemble un programme adapté, pour optimiser votre évolution et la qualité de vos cours.</p></div></li>
-          </ol>
-          <aside class="note">
-            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3l7 3v5c0 5-3.4 8.6-7 10-3.6-1.4-7-5-7-10V6l7-3z"/></svg>
-            <p><strong>Peur de l'eau ?</strong> C'est justement là qu'on commence. Tout se fait à votre rythme.</p>
-          </aside>
-          <a class="btn btn-cta" href="#reserver" data-go="reserver" data-open>Réserver mon premier cours</a>
+          <p class="eyebrow">Le premier cours</p>
+          <h2 id="premier-title">Faire connaissance dans l'eau.</h2>
+          <p class="lead">On évalue votre aisance, puis on construit une progression qui vous ressemble.</p>
+          <ul class="checklist">
+            <li><strong>Aisance</strong><span>Comment vous vous sentez dans l'eau.</span></li>
+            <li><strong>Déplacements</strong><span>Vos repères et vos acquis.</span></li>
+            <li><strong>Respiration et flottaison</strong><span>Les bases de la sécurité.</span></li>
+            <li><strong>Objectifs</strong><span>Ce qui inquiète, ce que vous voulez atteindre.</span></li>
+          </ul>
+          <p class="reassure">Pas besoin de savoir nager pour commencer.</p>
         </section>
 
-        <!-- 5 · TARIFS (grille guidée) -->
-        <section class="panel" id="tarifs" aria-labelledby="tarifs-title">
-          <p class="eyebrow">05 · Tarifs</p>
-          <h2 id="tarifs-title">Trouvez <em>la bonne formule.</em></h2>
-          <p class="lead">Deux questions, et je vous montre la formule qui vous correspond.</p>
-          <form class="guide" id="priceGuide" onsubmit="return false">
-            <fieldset>
-              <legend><span class="guide-n">1</span>Pour qui ?</legend>
-              <div class="seg" id="segWho"></div>
-            </fieldset>
-            <fieldset>
-              <legend><span class="guide-n">2</span>Combien de séances ?</legend>
-              <div class="seg" id="segPack"></div>
-            </fieldset>
-          </form>
-          <div class="price-card" id="priceCard" aria-live="polite" data-todo="Prix indicatifs : à remplacer par la vraie grille (assets/js/app.js → PRICING)"></div>
-          <p class="fineprint">Le premier cours comprend la prise de contact et l'analyse de votre niveau.</p>
-        </section>
-
-        <!-- 6 · AVIS -->
-        <section class="panel" id="avis" aria-labelledby="avis-title">
-          <p class="eyebrow">06 · Avis</p>
-          <h2 id="avis-title">Ils ont plongé <em>avant vous.</em></h2>
-          <div class="reviews" data-todo="Remplacer par de vrais avis clients (Google, avec accord)">
-            <figure class="review">
-              <span class="review-tag">Exemple</span>
-              <div class="stars" aria-label="5 sur 5">★★★★★</div>
-              <blockquote>« Ma fille avait peur de mettre la tête sous l'eau. Aujourd'hui, elle plonge pour attraper les anneaux. »</blockquote>
-              <figcaption>Parent · Couloir Enfants</figcaption>
-            </figure>
-            <figure class="review">
-              <span class="review-tag">Exemple</span>
-              <div class="stars" aria-label="5 sur 5">★★★★★</div>
-              <blockquote>« J'ai appris à nager à 42 ans. Pas de jugement, beaucoup de patience, et des progrès à chaque séance. »</blockquote>
-              <figcaption>Adulte · Couloir 3</figcaption>
-            </figure>
-            <figure class="review">
-              <span class="review-tag">Exemple</span>
-              <div class="stars" aria-label="5 sur 5">★★★★★</div>
-              <blockquote>« Des séances Aquababy douces et rassurantes. Un vrai moment de complicité avec notre bébé. »</blockquote>
-              <figcaption>Parents · Aquababy</figcaption>
-            </figure>
+        <!-- TARIFS -->
+        <section class="panel panel-blue" id="tarifs" aria-labelledby="tarifs-title">
+          <p class="eyebrow">Tarifs</p>
+          <h2 id="tarifs-title">Simple et clair.</h2>
+          <div class="toggle" role="group" aria-label="Lieu du cours">
+            <button type="button" data-place="piscine" aria-pressed="true">Au bassin</button>
+            <button type="button" data-place="domicile" aria-pressed="false">Chez vous</button>
           </div>
-          <a class="btn btn-ghost" href="#" data-todo="Lien vers la fiche Google">Voir tous les avis</a>
+          <div class="pcols" id="priceCols">
+            <div class="pcol"><span class="pdots" aria-hidden="true"><i></i></span><h3>Solo</h3><p class="pbig">35<small>€</small></p><p class="punit">l'heure</p><dl><div><dt>30 min</dt><dd>17 €</dd></div><div><dt>10 leçons</dt><dd>200 €</dd></div></dl></div>
+            <div class="pcol"><span class="pdots" aria-hidden="true"><i></i><i></i></span><h3>Duo</h3><p class="pbig">60<small>€</small></p><p class="punit">l'heure</p><dl><div><dt>30 min</dt><dd>20 €</dd></div><div><dt>10 leçons</dt><dd>300 €</dd></div></dl></div>
+            <div class="pcol"><span class="pdots" aria-hidden="true"><i></i><i></i><i></i></span><h3>Trio</h3><p class="pbig">80<small>€</small></p><p class="punit">l'heure</p><dl><div><dt>30 min</dt><dd>40 €</dd></div><div><dt>10 leçons</dt><dd>390 €</dd></div></dl></div>
+          </div>
+          <p class="fine" id="priceNote">Forfait : 10 leçons par mois. Tarifs susceptibles d'être révisés.</p>
+          <a class="btn btn-light" href="#reserver" data-go="reserver" data-open>Réserver un cours</a>
         </section>
 
-        <!-- 7 · FAQ -->
+        <!-- AVIS -->
+        <section class="panel" id="avis" aria-labelledby="avis-title">
+          <p class="eyebrow">Avis</p>
+          <h2 id="avis-title">Ce qu'en disent les parents.</h2>
+          <blockquote class="feature-quote">
+            <p>« Il a adoré et il n'a plus peur à la plage ! »</p>
+            <footer>Les parents d'A.</footer>
+          </blockquote>
+          <div class="quotes" tabindex="0" aria-label="Autres avis, à faire défiler">
+            <figure><blockquote>« Merci Emmy pour cette belle année ! Il sait maintenant nager, belle prouesse ! »</blockquote><figcaption>Parent de B.</figcaption></figure>
+            <figure><blockquote>« Elle attend impatiemment chaque semaine son cours de piscine. »</blockquote><figcaption>Parent de L.</figcaption></figure>
+            <figure><blockquote>« Je crois que c'est la plus belle leçon que j'ai vue de ma vie. Tout le monde avait la banane ! »</blockquote><figcaption>Sarah, BeeSport &amp; BeeSwim</figcaption></figure>
+            <figure><blockquote>« Elle était toute triste de ne pas avoir cours aujourd'hui. »</blockquote><figcaption>Maman de G.</figcaption></figure>
+            <figure><blockquote>« Un grand merci pour votre gentillesse et votre patience. »</blockquote><figcaption>Parent d'A.</figcaption></figure>
+            <figure><blockquote>« Il était enchanté toute l'année. Il va continuer l'année prochaine. »</blockquote><figcaption>Parent d'E.</figcaption></figure>
+          </div>
+        </section>
+
+        <!-- FAQ -->
         <section class="panel" id="faq" aria-labelledby="faq-title">
-          <p class="eyebrow">07 · Questions fréquentes</p>
-          <h2 id="faq-title">Une question ? <em>La bouée est là.</em></h2>
+          <p class="eyebrow">Questions fréquentes</p>
+          <h2 id="faq-title">Bon à savoir.</h2>
           <div class="faq">
-            <details open>
-              <summary>J'ai peur de l'eau. Est-ce que c'est pour moi ?</summary>
-              <p>Oui. C'est même au cœur de mon accompagnement : on commence par apprivoiser l'eau, sans brusquer, et on avance à votre rythme.</p>
+            <details>
+              <summary>Faut-il déjà savoir nager ?</summary>
+              <p>Non. Les débutants complets sont les bienvenus : on commence par se familiariser avec l'eau et par construire la confiance.</p>
             </details>
             <details>
-              <summary>À partir de quel âge mon enfant peut-il commencer ?</summary>
-              <p>Dès 3 mois, avec les séances Aquababy. Les cours Enfants prennent ensuite le relais de 1 à 9 ans.</p>
+              <summary>Mon enfant a peur de l'eau. Peut-il prendre des cours ?</summary>
+              <p>Oui. Les exercices sont introduits progressivement pour qu'il trouve ses repères, sans être brusqué.</p>
             </details>
             <details>
-              <summary>Comment se passe le premier cours ?</summary>
-              <p>C'est une prise de contact : vous découvrez votre coach, nous faisons le point sur vos objectifs et j'analyse votre niveau réel. Ensuite, nous validons ensemble un programme adapté.</p>
+              <summary>À partir de quel âge ?</summary>
+              <p>Dès le plus jeune âge, avec des activités adaptées aux bébés nageurs. Pour les cours individuels, la formule se définit selon l'enfant.</p>
             </details>
             <details>
-              <summary>En combien de temps vais-je savoir nager ?</summary>
-              <p>Il n'y a pas de durée type : chacun progresse à son rythme. Après le premier cours, nous fixons ensemble des objectifs réalistes.</p>
-            </details>
-            <details data-todo="Lieu(x), jours et créneaux">
               <summary>Où ont lieu les cours ?</summary>
-              <p>À Bruxelles. [À compléter : piscine(s), jours et créneaux.]</p>
+              <p>À Bruxelles : en piscine, ou chez vous si vous avez une piscine.</p>
+            </details>
+            <details>
+              <summary>Combien de cours pour apprendre à nager ?</summary>
+              <p>Il n'y a pas de nombre universel : tout dépend de l'âge, du niveau de départ, de la fréquence des cours et de l'aisance dans l'eau.</p>
             </details>
             <details>
               <summary>Que faut-il apporter ?</summary>
-              <p>Maillot de bain, bonnet, lunettes et serviette. Pour les bébés : une couche de bain.</p>
-            </details>
-            <details data-todo="Conditions d'annulation">
-              <summary>Puis-je annuler ou reporter une séance ?</summary>
-              <p>[À compléter : conditions d'annulation et de report.]</p>
+              <p>Un maillot de bain, une serviette et, si besoin, des lunettes de natation.</p>
             </details>
           </div>
         </section>
 
-        <!-- 8 · RÉSERVER -->
+        <!-- PRENDRE CONTACT -->
         <section class="panel" id="reserver" aria-labelledby="reserver-title">
-          <p class="eyebrow">08 · Prendre contact</p>
-          <h2 id="reserver-title">On se jette <em>à l'eau ?</em></h2>
-          <p class="lead">Laissez-moi vos coordonnées : je vous recontacte pour fixer votre premier cours.</p>
-          <form class="form" id="bookForm" novalidate>
+          <p class="eyebrow">Prendre contact</p>
+          <h2 id="reserver-title">Votre cours en trois choix.</h2>
+          <form class="book" id="bookForm" novalidate>
+            <fieldset>
+              <legend>Où ?</legend>
+              <div class="chips" data-name="place">
+                <button type="button" data-v="piscine" aria-pressed="true">Au bassin</button>
+                <button type="button" data-v="domicile" aria-pressed="false">Chez vous</button>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Combien de nageurs ?</legend>
+              <div class="chips" data-name="n">
+                <button type="button" data-v="1" aria-pressed="true">Solo</button>
+                <button type="button" data-v="2" aria-pressed="false">Duo</button>
+                <button type="button" data-v="3" aria-pressed="false">Trio</button>
+              </div>
+            </fieldset>
+            <fieldset>
+              <legend>Quelle formule ?</legend>
+              <div class="chips" data-name="f">
+                <button type="button" data-v="30" aria-pressed="false">30 minutes</button>
+                <button type="button" data-v="60" aria-pressed="true">1 heure</button>
+                <button type="button" data-v="10" aria-pressed="false">10 leçons</button>
+              </div>
+            </fieldset>
+            <div class="book-sum" aria-live="polite"><span id="bookWhat">Solo · au bassin · 1 heure</span><strong id="bookPrice">35 €</strong></div>
             <div class="field">
-              <label for="f-name">Prénom et nom</label>
-              <input id="f-name" name="name" autocomplete="name" required>
-              <p class="field-error" id="e-name" hidden>Indiquez votre prénom pour que je sache qui contacter.</p>
+              <label for="f-name">Prénom</label>
+              <input id="f-name" name="name" autocomplete="given-name" required>
+              <p class="field-error" id="e-name" hidden>Indiquez votre prénom.</p>
             </div>
             <div class="field">
               <label for="f-contact">Téléphone ou e-mail</label>
-              <input id="f-contact" name="contact" autocomplete="email" inputmode="email" required>
-              <p class="field-error" id="e-contact" hidden>Il me faut un téléphone ou un e-mail valide pour vous répondre.</p>
+              <input id="f-contact" name="contact" autocomplete="tel" inputmode="email" required>
+              <p class="field-error" id="e-contact" hidden>Il faut un téléphone ou un e-mail valide pour vous répondre.</p>
             </div>
-            <div class="field">
-              <label for="f-who">Pour qui ?</label>
-              <select id="f-who" name="who">
-                <option value="aquababy">Aquababy (3 mois – 1 an)</option>
-                <option value="enfant">Enfant (1 – 9 ans)</option>
-                <option value="jeune">Jeune (9 – 18 ans)</option>
-                <option value="adulte" selected>Adulte (18 ans et +)</option>
-              </select>
-            </div>
-            <div class="field">
-              <label for="f-pack">Formule <span class="optional">(facultatif)</span></label>
-              <select id="f-pack" name="pack">
-                <option value="">Je ne sais pas encore</option>
-                <option value="unite">Premier cours / séance à l'unité</option>
-                <option value="5">Carnet 5 séances</option>
-                <option value="10">Carnet 10 séances</option>
-              </select>
-            </div>
-            <div class="field field-wide">
-              <label for="f-msg">Vos objectifs, vos appréhensions <span class="optional">(facultatif)</span></label>
-              <textarea id="f-msg" name="message" rows="3"></textarea>
-            </div>
-            <label class="consent field-wide"><input type="checkbox" id="f-ok" required> <span>J'accepte d'être recontacté·e au sujet de ma demande.</span></label>
-            <p class="field-error field-wide" id="e-ok" hidden>Cochez la case pour que je puisse vous recontacter.</p>
-            <button class="btn btn-cta field-wide" type="submit">Envoyer ma demande</button>
+            <label class="consent"><input type="checkbox" id="f-ok" required> <span>J'accepte d'être recontacté·e au sujet de ma demande.</span></label>
+            <p class="field-error" id="e-ok" hidden>Cochez la case pour qu'Emmy puisse vous recontacter.</p>
+            <button class="btn btn-cta" type="submit">Envoyer ma demande</button>
+            <a class="link" id="waLink" href="#" target="_blank" rel="noopener" hidden>Ou écrire sur WhatsApp</a>
           </form>
           <div class="form-done" id="formDone" hidden tabindex="-1">
-            <h3>Merci ! <em>À très vite dans l'eau.</em></h3>
+            <h3>Merci, à très vite dans l'eau.</h3>
             <p id="formDoneText">Votre demande est bien notée.</p>
           </div>
-          <ul class="contact-alt" data-todo="Téléphone, e-mail, Instagram réels">
-            <li><span>Téléphone</span><a href="#">à compléter</a></li>
-            <li><span>Instagram</span><a href="#">à compléter</a></li>
-          </ul>
         </section>
 
         <footer class="site-foot">
-          <img src="assets/img/logo-full.svg" alt="MyLizaSwim" width="96" height="127">
-          <p>© <span id="year">2026</span> MyLizaSwim · <a href="#" data-todo="Page mentions légales">Mentions légales</a> · <a href="#" data-todo="Politique de confidentialité">Confidentialité</a></p>
+          <img src="assets/img/logo-full.svg" alt="MyLizaSwim" width="80" height="106">
+          <p>© <span id="year">2026</span> MyLizaSwim · Bruxelles · <a href="#" data-todo="Page mentions légales">Mentions légales</a> · <a href="#" data-todo="Politique de confidentialité">Confidentialité</a></p>
         </footer>
       </div>
       <div class="sheet-foot">
-        <button class="btn btn-ghost btn-sm" id="sheetPrev" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span></span></button>
-        <button class="btn btn-ghost btn-sm" id="sheetNext" type="button"><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+        <button class="sheet-nav" id="sheetPrev" type="button"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg><span></span></button>
+        <button class="sheet-nav sheet-nav-next" id="sheetNext" type="button"><span></span><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
       </div>
     </div>
   </main>
@@ -392,11 +318,10 @@
   <!-- Menu plein écran -->
   <div class="menu" id="menu" hidden>
     <div class="menu-inner">
-      <p class="eyebrow">Le bassin</p>
       <ol class="menu-list" id="menuList"></ol>
       <div class="menu-foot">
-        <button class="btn btn-ghost btn-sm" id="classicBtn" type="button">Version sans 3D</button>
-        <a class="btn btn-cta btn-sm" href="#reserver" data-go="reserver" data-open>Réserver le premier cours</a>
+        <a class="btn btn-cta" href="#reserver" data-go="reserver" data-open>Réserver un cours</a>
+        <button class="link link-light" id="classicBtn" type="button">Version sans 3D</button>
       </div>
     </div>
   </div>

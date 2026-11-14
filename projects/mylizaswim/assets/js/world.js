@@ -31,7 +31,7 @@ const HALL = { x: 9, near: 3.5, far: -20, h: 7.2, mezz: 3.4, col: 6.3 };
 const LOUNGE = { x: 7, back: 14, h: 3.4 };
 
 const v3 = (x, y, z) => new THREE.Vector3(x, y, z);
-const FONT = '"Jost Variable", "Jost", system-ui, sans-serif';
+const FONT = '-apple-system, BlinkMacSystemFont, "SF Pro Display", "Inter Variable", "Inter", "Helvetica Neue", Arial, sans-serif';
 
 /* ---------- helpers ---------- */
 function canvasTexture(w, h, draw, { repeat, srgb = true } = {}) {

@@ -1,30 +1,31 @@
 # MyLizaSwim : le bassin
 
-Site vitrine immersif pour MyLizaSwim : Emmy, coach de natation à Bruxelles (Aquababy, enfants, jeunes et adultes).
+Site vitrine immersif pour MyLizaSwim : Maliza Grace-Emmy (« Emmy »), maître-nageuse à Bruxelles. Cours particuliers pour bébés nageurs, enfants, ados et adultes, au bassin ou à domicile.
 
 ## Le concept
 
 Une visite en trois lieux, guidée par un dauphin de verre. Ambiance tamisée : bois et pierre bruns, lumière ambrée qui balaie les murs, accents bleu Majorelle (bassin, fauteuils, gorges lumineuses) et orange (LED, lanternes, couchant), ombres longues du soleil qui n'entre que par la porte de la terrasse.
 
-1. **Le salon d'accueil** (bois, cuir cognac, velours marine, cheminée) : on arrive, on s'installe, on aperçoit le bassin à travers la verrière.
-2. **La piscine intérieure** (pierre, colonnes sombres, rubans LED chauds, alcôves avec transats) : chaque objet est une porte vers une information.
-3. **La terrasse** (dalles claires, fauteuils tressés, arbres, ciel bleu → orange) : fin de la visite, on prend contact.
+1. **Le salon d'accueil** (parquet, cuir cognac, velours bleu Majorelle, cheminée) : on arrive, on aperçoit le bassin à travers la verrière.
+2. **La piscine intérieure** (pierre, colonnes sombres, rubans LED, alcôves avec transats), cadrée dans l'axe à l'entrée, comme une photo d'architecte.
+3. **La terrasse** (dalles, pergola, fauteuils tressés, couchant) : fin de la visite, on prend contact.
 
-| # | Où | Objet | Ouvre |
+| # | Où | Objet | Fiche |
 |---|---|---|---|
-| 0 | Salon | vue sur la verrière | Accueil |
-| 1 | Piscine | 3 lanternes flottantes | **Ma méthode** (Sensation · Expression · Application) |
-| 2 | Piscine | chaise de maître-nageur | **Votre coach** |
-| 3 | Piscine | 3 plots numérotés | **Quel nageur êtes-vous ?** (1 couloir = 1 profil) |
-| 4 | **Sous l'eau** | échelle, planche vue d'en dessous | **Le premier cours** |
-| 5 | Piscine | banc et piles de serviettes (1, 5, 10) | **Tarifs** (grille guidée) |
-| 6 | Piscine | écran à gauche de la sortie | **Avis** |
-| 7 | Piscine | bouée à droite de la sortie | **FAQ** |
-| 8 | Terrasse | tables et fauteuils | **Prendre contact** |
+| 1 | Salon | vue sur la verrière | Accueil |
+| 2 | Piscine, vue axiale | 3 lanternes flottantes | **Ma méthode** (Sensation · Expression · Application) |
+| 3 | Piscine | chaise de maître-nageur | **Votre coach** (photo, chiffres clés) |
+| 4 | Piscine | 3 plots numérotés | **Pour qui ?** (1 couloir = 1 public) |
+| 5 | **Sous l'eau** | échelle, planche vue d'en dessous | **Le premier cours** |
+| 6 | Piscine | banc et piles de 1, 2, 3 serviettes | **Tarifs** (solo, duo, trio · au bassin / chez vous) |
+| 7 | Piscine | écran à gauche de la sortie | **Avis** |
+| 8 | Piscine | bouée à droite de la sortie | **FAQ** |
+| 9 | Terrasse | tables et fauteuils | **Prendre contact** (cours en trois choix, prix en direct) |
 
-- **Pas besoin de défiler** : objets cliquables, pastilles, menu, ligne d'eau à droite.
-- **Au défilement**, la caméra glisse sur un rail continu, du salon à la piscine, plonge sous la surface à l'étape 4 (brouillard bleu, rayons de lumière, bulles, son étouffé si le son est activé), ressort, puis sort sur la terrasse.
-- **Le dauphin** est modélisé en sections elliptiques (melon, rostre, nageoires falciformes) et nage avec une ondulation dorso-ventrale calculée dans le shader. Entre deux étapes, il plonge, nage sous la surface, puis saute à l'arrivée ; à l'étape 4, il tourne autour de la caméra sous l'eau. Cliquez dessus : il fait une vrille.
+- **Pas besoin de défiler** : objets cliquables, pastilles, menu, progression à droite (barre d'étapes sur mobile).
+- **Au défilement**, la caméra glisse sur un rail continu, une étape par geste, plonge sous la surface à l'étape 5, ressort, puis sort sur la terrasse.
+- **Une fiche = une idée** : un titre court, une phrase, puis l'essentiel en tuiles. La fiche s'adapte à la hauteur de son contenu ; la fiche Tarifs passe en bleu Majorelle.
+- **Le dauphin** nage avec une ondulation calculée dans le shader : il plonge entre deux étapes, saute à l'arrivée, tourne autour de la caméra sous l'eau. Cliquez dessus : il fait une vrille.
 
 ## Lancer en local
 
@@ -36,48 +37,48 @@ python3 -m http.server 8000
 # puis http://localhost:8000
 ```
 
-Aucune dépendance à installer, aucune étape de build : three.js et les polices sont auto-hébergés dans `vendor/` et `assets/fonts/` (pas d'appel à Google Fonts, pas de CDN, ce qui évite le souci RGPD).
+Aucune dépendance à installer, aucune étape de build : three.js et la police sont auto-hébergés dans `vendor/` et `assets/fonts/` (aucun CDN, aucun appel à Google Fonts).
 
 URL utiles :
 
-- `?brouillon` : surligne en orange **tout ce qui reste à fournir** par la cliente.
-- `?classique` : version sans 3D (aussi utilisée automatiquement sans WebGL ou sans JavaScript).
-- `#tarifs`, `#coach`… : lien direct vers un panneau (partageable).
+- `?brouillon` : surligne ce qui reste à fournir.
+- `?classique` : version sans 3D (aussi utilisée automatiquement sans WebGL, sans JavaScript, si le contexte 3D est perdu ou si le chargement bloque).
+- `#tarifs`, `#coach`… : lien direct vers une fiche.
+
+## Contenus
+
+Les textes, tarifs, avis, FAQ et la photo d'Emmy viennent de l'ancienne version du site « Myliza Swim ». La photo a été recadrée pour retirer le sticker « bonjour! ».
 
 ## À fournir avant la mise en ligne
 
-Visible avec `?brouillon` :
-
-- [ ] **Photo de la coach** (portrait, 1200 × 1500 px min.)
-- [ ] **Nom complet** et **diplômes** (BPJEPS AAN / BNSSA / formation bébés nageurs… : rassure les parents)
-- [ ] **Vraie grille tarifaire** : `assets/js/app.js` → `PRICING` (les prix actuels sont **indicatifs**)
-- [ ] **Durées des séances** par profil (`PRICING.who[].duration`)
-- [ ] **Vrais avis** clients (avec leur accord). Les 3 avis affichés sont des **exemples** étiquetés comme tels.
-- [ ] **Lieu(x)**, jours, créneaux, conditions d'annulation (FAQ)
-- [ ] **Téléphone, Instagram**, lien fiche Google
-- [ ] **Brancher le formulaire** : `assets/js/app.js` → `CONFIG.formEndpoint` (Formspree, Basin…). Sans ça, le formulaire affiche « Démo : formulaire pas encore connecté. »
-- [ ] Mentions légales + politique de confidentialité
-- [ ] Logo vectoriel d'origine (le logo actuel a été vectorisé depuis une image : correct à l'écran, à remplacer par le fichier source)
+- [ ] **Brancher le formulaire** : `assets/js/app.js` → `CONFIG.formEndpoint` (Formspree, Basin…). Sans ça, il affiche « Démo : formulaire pas encore connecté. » et n'envoie rien.
+- [ ] **Numéro WhatsApp** d'Emmy : `CONFIG.whatsapp` (affiche le lien « Ou écrire sur WhatsApp » avec la demande déjà rédigée).
+- [ ] **Confirmer les tarifs** (`PRICES`), en particulier « Déplacement hors Bruxelles : + 15 € / km ».
+- [ ] **Confirmer que les avis sont réels** et que les familles sont d'accord pour être citées.
+- [ ] Photo d'Emmy en meilleure définition (l'actuelle fait 600 × 450 px).
+- [ ] Mentions légales + politique de confidentialité.
+- [ ] Logo vectoriel d'origine (l'actuel a été vectorisé depuis une image).
 
 ## Structure
 
 ```
 index.html              tout le contenu (SEO, lecteurs d'écran, mode classique)
-assets/css/style.css    design system : tokens, panneaux, responsive, mode classique
-assets/js/app.js        contenu dynamique : étapes, tarifs, formulaire, menu, son
-assets/js/scene-app.js  expérience 3D : caméra, défilement, pastilles, dauphin, intro
+assets/css/style.css    design system : tokens, fiches, responsive, mode classique
+assets/js/app.js        contenu : étapes, tarifs, réservation, menu, son
+assets/js/scene-app.js  expérience 3D : caméra, défilement, pastilles, dauphin, garde-fous
 assets/js/world.js      salon, piscine, terrasse et dauphin en three.js (100 % procédural)
-assets/img/             logo vectorisé (SVG)
-assets/fonts/           Jost (variable) + Instrument Serif, licence OFL
+assets/img/             logo vectorisé (SVG), photo d'Emmy
+assets/fonts/           Inter (variable), licence OFL
 vendor/three/           three.js r169 (MIT)
 ```
 
-Les positions caméra de chaque étape sont dans `STATIONS` (`app.js`), avec une variante mobile (`camM` / `lookM`).
+Les positions caméra de chaque étape sont dans `STATIONS` (`app.js`), avec une variante mobile (`camM` / `lookM`) et une focale propre si besoin (`fov` / `fovM`).
 
 ## Choix de design
 
-- **Ambiance** : piscine au crépuscule. Fond en dégradé bleu marque → orange marque, lumière dorée rasante, bassin éclairé de l'intérieur, matières sobres (teck, toile écrue, marine, inox). La feuille de lecture reste claire pour le confort des textes longs.
-- **Couleurs** : bleu marque `#2F39DA`, orange marque `#D4713D`. L'orange marque n'atteint pas le contraste AA avec du texte blanc (3,4:1), donc les boutons utilisent `#BC5A28` (4,6:1) et le texte orange `#B4531F`.
-- **Typographie** : Jost (héritière libre de Futura, cousine du « S W I M » du logo) + Instrument Serif en italique pour les mots qui portent l'émotion (« libre », « à l'eau »).
-- **Accessibilité** : navigation complète au clavier (flèches, Échap, Tab), `prefers-reduced-motion` respecté (pas d'intro, coupes franches), pastilles et ligne d'eau en vrais boutons, version sans 3D en un clic.
-- **Performance** : ~280 Ko transférés en gzip (940 Ko bruts, dont three.js), aucune image lourde, rendu limité à 1,5× la densité d'écran sur mobile, ombres allégées, boucle en pause quand l'onglet est caché.
+- **Typographie** : la police système d'Apple (SF Pro) sur Mac, iPhone et iPad, Inter ailleurs. Titres courts, graisse 600, interlettrage serré ; pas d'italique décoratif, pas de capitales espacées.
+- **Couleurs** : bleu Majorelle `#2F39DA`, orange `#D4713D`, brun expresso pour le verre de l'interface. L'orange marque n'atteint pas le contraste AA avec du texte blanc (3,4:1), donc les boutons utilisent `#BC5A28` (4,6:1).
+- **Fiches** : papier blanc, gris neutres façon Apple (`#1D1D1F`, `#6E6E73`, tuiles `#F5F5F7`).
+- **Repères** : numéro et titre de l'étape dans la carte du guide, bouton explicite par étape, un geste de défilement = une étape au plus.
+- **Garde-fous** : qualité adaptative si l'appareil rame, proposition (une seule fois) de la version sans 3D, bascule automatique si la 3D plante.
+- **Accessibilité** : navigation complète au clavier (flèches, Échap, Tab), `prefers-reduced-motion` respecté, pastilles et progression en vrais boutons.
