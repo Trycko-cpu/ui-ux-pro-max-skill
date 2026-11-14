@@ -41,55 +41,55 @@ const STATIONS = [
     id: 'accueil', label: 'Accueil', cta: 'Commencer la visite',
     cam: [0, 6.1, 8.2], look: [0, -1.5, -7.4], camM: [0, 12.5, 12.0], lookM: [0, -1.2, -6.9],
     dolphin: [2.5, -3.2],
-    line: 'Bienvenue chez MyLizaSwim ! Je suis votre guide. Cliquez sur un objet du bassin, ou faites défiler pour plonger.',
+    line: 'Bienvenue chez MyLizaSwim. Je vous fais visiter le bassin : touchez un élément, ou faites défiler pour avancer.',
   },
   {
     id: 'methode', label: 'Ma méthode',
     cam: [0, 2.9, -1.4], look: [0, -0.35, -7.8], camM: [0, 5.4, 2.6], lookM: [0, -0.7, -7.5],
     dolphin: [0, -4.6],
-    line: 'Ces trois bouées, c\'est la méthode de Maliza : Sensation, Expression, Application. Touchez-en une !',
+    line: 'Ces trois lumières, c\'est la méthode d\'Emmy : Sensation, Expression, Application.',
   },
   {
     id: 'coach', label: 'Votre coach',
     cam: [1.3, 2.6, -2.7], look: [5.7, 1.75, -7.7], camM: [0.6, 3.2, -1.8], lookM: [5.7, 1.6, -7.6],
     dolphin: [2.5, -5.4],
-    line: 'Sur la grande chaise, c\'est la place de Maliza. Venez découvrir son histoire : elle aussi a appris à nager !',
+    line: 'La chaise du maître-nageur, c\'est la place d\'Emmy. Elle aussi a appris à nager : découvrez son parcours.',
   },
   {
     id: 'nageurs', label: 'Quel nageur êtes-vous ?', pin: 'Quel nageur êtes-vous ?',
     cam: [0, 1.5, -5.6], look: [0, 0.55, 0.9], camM: [0, 2.9, -9.4], lookM: [0, 0.45, 0.9],
     dolphin: [-2.2, -1.0],
-    line: 'Trois plots, trois couloirs. Aquababy, Enfants, Jeunes & adultes : lequel est le vôtre ?',
+    line: 'Trois plots, trois couloirs : Aquababy, Enfants, Jeunes et adultes. Lequel est le vôtre ?',
   },
   {
     id: 'premier-cours', label: 'Le premier cours',
     cam: [-0.3, 2.0, -0.4], look: [-3.3, -0.15, -3.95], camM: [0.4, 2.6, 0.6], lookM: [-3.2, -0.2, -4.0],
     dolphin: [-2.5, -5.6],
-    line: 'L\'échelle et la planche, c\'est le tout premier pas. Voici comment se passe le premier cours.',
+    line: 'L\'échelle et la planche : le tout premier pas. Voici comment se déroule le premier cours.',
   },
   {
     id: 'tarifs', label: 'Tarifs',
     cam: [2.9, 2.0, -9.6], look: [5.9, 0.55, -12.3], camM: [2.0, 2.9, -8.6], lookM: [5.9, 0.5, -12.3],
     dolphin: [2.7, -11.3],
-    line: 'Une serviette, cinq, dix… Sur le banc, je vous aide à choisir la formule qui vous va.',
+    line: 'Une serviette, cinq, dix : sur le banc, trouvez la formule qui vous correspond.',
   },
   {
     id: 'avis', label: 'Avis',
     cam: [0, 2.9, -10.9], look: [0, 1.95, -19.4], camM: [0, 3.2, -8.4], lookM: [0, 1.9, -19.4],
     dolphin: [-2.5, -14.0],
-    line: 'Le tableau des résultats ! Voici ce que disent les familles.',
+    line: 'Le tableau du bassin : ce qu\'en disent les familles et les élèves.',
   },
   {
     id: 'faq', label: 'Questions', pin: 'Questions fréquentes',
     cam: [2.7, 2.1, -15.0], look: [6.3, 1.1, -17.0], camM: [2.2, 2.5, -14.6], lookM: [6.3, 1.05, -17.0],
     dolphin: [2.5, -12.4],
-    line: 'Une question ? La bouée est là pour ça. Je vous ai préparé les réponses.',
+    line: 'Une question ? La bouée est là pour ça : les réponses aux questions les plus fréquentes.',
   },
   {
     id: 'reserver', label: 'Réserver', cta: 'Réserver',
     cam: [0, 15.5, -3.6], look: [0, 0, -8.4], camM: [0, 21, -3.0], lookM: [0, 0, -8.6],
     dolphin: [0, -8.2],
-    line: 'Prêt·e à vous jeter à l\'eau ? Laissez vos coordonnées, Maliza vous recontacte très vite.',
+    line: 'Prêt·e à vous lancer ? Laissez vos coordonnées, Emmy vous recontacte rapidement.',
   },
 ];
 const N = STATIONS.length;
@@ -101,10 +101,8 @@ const SUBPINS = {
 };
 
 const EASTER = [
-  'Splash ! Encore ?',
-  'Je nage, tu nages, nous nageons !',
-  'Un dauphin en verre, ça ne craint pas l\'eau. Ni les câlins.',
-  'Hihi, ça chatouille !',
+  'L\'eau, d\'abord étrangère, devient une alliée.',
+  'Chacun son couloir, chacun son rythme.',
 ];
 
 /* ------------------------------------------------------------------ */

@@ -1,6 +1,6 @@
 # MyLizaSwim : le bassin
 
-Site vitrine immersif pour MyLizaSwim, coach de natation (Aquababy, enfants, jeunes et adultes).
+Site vitrine immersif pour MyLizaSwim : Emmy, coach de natation à Bruxelles (Aquababy, enfants, jeunes et adultes).
 
 ## Le concept
 
@@ -8,7 +8,7 @@ On arrive **face à un bassin de 3 couloirs**, dans un diorama 3D lumineux. Chaq
 
 | # | Objet dans le bassin | Ouvre |
 |---|---|---|
-| 1 | Les 3 bouées qui flottent | **Ma méthode** (Sensation · Expression · Application) |
+| 1 | Les 3 lanternes qui flottent | **Ma méthode** (Sensation · Expression · Application) |
 | 2 | La chaise de maître-nageur + parasol | **Votre coach** |
 | 3 | Les 3 plots de départ numérotés | **Quel nageur êtes-vous ?** (1 couloir = 1 profil) |
 | 4 | L'échelle + la planche | **Le premier cours** |
@@ -19,7 +19,7 @@ On arrive **face à un bassin de 3 couloirs**, dans un diorama 3D lumineux. Chaq
 
 - **Pas besoin de défiler** : tout est cliquable depuis la vue d'ensemble (objets 3D, pastilles, menu, ligne d'eau à droite).
 - **Au défilement**, la caméra glisse sur un rail continu entre les objets, avec un aimant doux sur chaque étape (une molette = une étape ; un trackpad permet de « scrubber »).
-- **Le dauphin en verre** (mascotte) nage d'étape en étape en sautant, et explique chaque fonction en français. Cliquez dessus : il fait une pirouette.
+- **Le dauphin en cristal** (mascotte) nage d'étape en étape en sautant, et explique chaque fonction en français. Cliquez dessus : il fait une pirouette.
 - **Intro** (1re visite seulement) : le bassin se remplit, puis le dauphin plonge.
 
 ## Lancer en local
@@ -72,6 +72,7 @@ Les positions caméra de chaque étape sont dans `STATIONS` (`app.js`), avec une
 
 ## Choix de design
 
+- **Ambiance** : piscine au crépuscule. Fond en dégradé bleu marque → orange marque, lumière dorée rasante, bassin éclairé de l'intérieur, matières sobres (teck, toile écrue, marine, inox). La feuille de lecture reste claire pour le confort des textes longs.
 - **Couleurs** : bleu marque `#2F39DA`, orange marque `#D4713D`. L'orange marque n'atteint pas le contraste AA avec du texte blanc (3,4:1), donc les boutons utilisent `#BC5A28` (4,6:1) et le texte orange `#B4531F`.
 - **Typographie** : Jost (héritière libre de Futura, cousine du « S W I M » du logo) + Instrument Serif en italique pour les mots qui portent l'émotion (« libre », « à l'eau »).
 - **Accessibilité** : navigation complète au clavier (flèches, Échap, Tab), `prefers-reduced-motion` respecté (pas d'intro, coupes franches), pastilles et ligne d'eau en vrais boutons, version sans 3D en un clic.
