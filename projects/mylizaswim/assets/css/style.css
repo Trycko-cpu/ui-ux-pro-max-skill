@@ -691,3 +691,33 @@ html.js:not(.classic) .sheet { background: rgba(251, 248, 244, 0.96); }
 html.underwater .underwater-fx { opacity: 1; }
 html.classic .underwater-fx, html.no-js .underwater-fx { display: none; }
 @keyframes sway { from { transform: translateX(-3%) skewX(-4deg); } to { transform: translateX(3%) skewX(4deg); } }
+
+/* ==================================================================
+   Ambiance tamisée : verre brun expresso, bleu Majorelle, orange
+================================================================== */
+:root {
+  --espresso: #1A120D;
+  --glass-dark: rgba(30, 21, 15, 0.6);
+  --glass-dark-strong: rgba(26, 18, 13, 0.85);
+  --glass-dark-border: rgba(255, 214, 180, 0.14);
+  --majorelle: #2F39DA;
+  --majorelle-hover: #3B46F0;
+}
+html.js:not(.classic) body { background: linear-gradient(180deg, #1A120D, #2A1C14 45%, #1C2276); }
+.hero::before { background: radial-gradient(closest-side, rgba(22, 14, 9, 0.62), rgba(22, 14, 9, 0.3) 55%, rgba(22, 14, 9, 0)); }
+.pin-dot { background: var(--majorelle); color: #fff; }
+.pin-dot::after { border-color: rgba(120, 132, 255, 0.85); }
+.pin:hover, .pin.is-hover { background: rgba(30, 21, 15, 0.85); }
+.mascot .btn-primary { background: var(--majorelle); color: #fff; }
+.mascot .btn-primary:hover { background: var(--majorelle-hover); }
+.menu { background: rgba(24, 16, 11, 0.9); }
+.loader { background: linear-gradient(180deg, #1A120D, #2A1C14 45%, #1C2276); }
+html.classic .hero, html.no-js .hero { background: linear-gradient(160deg, #1A120D, #2A1C14 35%, #1F2A9E 75%, #D4713D); }
+html.classic .topbar, html.no-js .topbar { background: rgba(26, 18, 13, 0.94); }
+html.menu-open .topbar .icon-btn#menuBtn { color: var(--espresso); }
+.underwater-fx {
+  background:
+    radial-gradient(120% 70% at 50% -10%, rgba(150, 165, 255, 0.24), rgba(150, 165, 255, 0) 60%),
+    radial-gradient(140% 120% at 50% 50%, rgba(6, 10, 50, 0) 45%, rgba(6, 10, 50, 0.65) 100%);
+}
+.underwater-fx::after { background: repeating-linear-gradient(100deg, rgba(190, 200, 255, 0) 0 60px, rgba(190, 200, 255, 0.06) 60px 90px, rgba(190, 200, 255, 0) 90px 170px); }

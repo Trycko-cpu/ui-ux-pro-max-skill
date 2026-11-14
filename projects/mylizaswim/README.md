@@ -4,7 +4,7 @@ Site vitrine immersif pour MyLizaSwim : Emmy, coach de natation à Bruxelles (Aq
 
 ## Le concept
 
-Une visite en trois lieux, guidée par un dauphin de verre :
+Une visite en trois lieux, guidée par un dauphin de verre. Ambiance tamisée : bois et pierre bruns, lumière ambrée qui balaie les murs, accents bleu Majorelle (bassin, fauteuils, gorges lumineuses) et orange (LED, lanternes, couchant), ombres longues du soleil qui n'entre que par la porte de la terrasse.
 
 1. **Le salon d'accueil** (bois, cuir cognac, velours marine, cheminée) : on arrive, on s'installe, on aperçoit le bassin à travers la verrière.
 2. **La piscine intérieure** (pierre, colonnes sombres, rubans LED chauds, alcôves avec transats) : chaque objet est une porte vers une information.

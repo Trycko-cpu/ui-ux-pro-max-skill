@@ -16,6 +16,9 @@ export const COLORS = {
   orange: '#D4713D',
   ink: '#0D1240',
   navy: '#1C2266',
+  majorelle: '#2F39DA',
+  majorelleGlow: '#5562FF',
+  amber: '#FFAE62',
   teak: '#8F6142',
   cream: '#EEE6D8',
   white: '#F5F2EC',
@@ -97,11 +100,11 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const sky = mesh(new THREE.SphereGeometry(170, 32, 16), new THREE.ShaderMaterial({
     side: THREE.BackSide, depthWrite: false, fog: false,
     uniforms: {
-      uZenith: { value: new THREE.Color('#2634A8') },
-      uHigh: { value: new THREE.Color('#6E86D6') },
-      uHorizon: { value: new THREE.Color('#F4B98A') },
-      uGround: { value: new THREE.Color('#D9B892') },
-      uSun: { value: v3(-0.25, 0.12, -1).normalize() },
+      uZenith: { value: new THREE.Color('#141C78') },
+      uHigh: { value: new THREE.Color('#3A40B8') },
+      uHorizon: { value: new THREE.Color('#F08A4C') },
+      uGround: { value: new THREE.Color('#5A3A2A') },
+      uSun: { value: v3(-0.25, 0.12, -0.96).normalize() },
     },
     vertexShader: /* glsl */`
       varying vec3 vP;
@@ -123,17 +126,45 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   scene.add(sky);
 
   /* ---------- lumière ---------- */
-  scene.add(new THREE.HemisphereLight('#FFEBD6', '#4A3B30', 0.66));
-  const key = new THREE.DirectionalLight('#FFE6CA', 1.7);
-  key.position.set(7, 16, 4);
-  key.target.position.set(0, 0, -12);
+  // très peu de lumière d'ambiance : l'espace vit par ses sources (lampes, LED, eau, soleil couchant)
+  scene.add(new THREE.HemisphereLight('#7A5C46', '#1A120C', 0.42));
+  // soleil couchant rasant depuis la terrasse : le mur du fond et le plafond font écran,
+  // il n'entre dans le hall que par la porte vitrée (une flaque de lumière orange au sol)
+  const key = new THREE.DirectionalLight('#FFA45E', 2.6);
+  key.target.position.set(0, 0, -8);
+  key.position.copy(key.target.position).addScaledVector(v3(-0.25, 0.36, -0.9).normalize(), 50);
   key.castShadow = true;
   key.shadow.mapSize.set(low ? 1024 : 2048, low ? 1024 : 2048);
-  Object.assign(key.shadow.camera, { left: -17, right: 17, top: 32, bottom: -32, near: 1, far: 80 });
-  key.shadow.bias = -0.0006;
-  key.shadow.normalBias = 0.03;
-  key.shadow.radius = 5;
+  Object.assign(key.shadow.camera, { left: -19, right: 19, top: 19, bottom: -19, near: 1, far: 110 });
+  key.shadow.bias = -0.0008;
+  key.shadow.normalBias = 0.04;
+  key.shadow.radius = 4;
   scene.add(key, key.target);
+  // spots du plafond : des flaques de lumière chaude sur chaque élément
+  const beamTex = canvasTexture(64, 256, (g, w, h) => {
+    const grd = g.createLinearGradient(0, 0, 0, h);
+    grd.addColorStop(0, 'rgba(255,255,255,0.75)'); grd.addColorStop(0.6, 'rgba(255,255,255,0.12)'); grd.addColorStop(1, 'rgba(255,255,255,0)');
+    g.fillStyle = grd; g.fillRect(0, 0, w, h);
+  });
+  const spot = (x, y, z, tx, ty, tz, { color = '#FFC48A', intensity = 48, angle = 0.42, beam = true, castShadow = false, parent = scene } = {}) => {
+    const sp = new THREE.SpotLight(color, intensity, 16, angle, 0.85, 1.6);
+    sp.position.set(x, y, z);
+    sp.target.position.set(tx, ty, tz);
+    if (castShadow) { sp.castShadow = true; sp.shadow.mapSize.set(1024, 1024); sp.shadow.bias = -0.0008; sp.shadow.radius = 6; }
+    parent.add(sp, sp.target);
+    if (beam) {
+      // faisceau visible dans l'air (cône additif très léger)
+      const len = Math.hypot(x - tx, y - ty, z - tz);
+      const cone = new THREE.Mesh(new THREE.ConeGeometry(Math.tan(angle) * len * 0.9, len, 32, 1, true),
+        new THREE.MeshBasicMaterial({ map: beamTex, color, transparent: true, opacity: 0.055, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }));
+      cone.geometry.translate(0, -len / 2, 0);
+      cone.position.set(x, y, z);
+      cone.lookAt(tx, ty, tz); cone.rotateX(-Math.PI / 2);
+      cone.renderOrder = 9;
+      parent.add(cone);
+    }
+    return sp;
+  };
 
   /* ---------- textures partagées ---------- */
   const glowTex = canvasTexture(128, 128, (g, w, h) => {
@@ -151,11 +182,33 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     }
   }, { repeat: [3, 2] });
   const leafM = std('#ffffff', { map: leafTex, roughness: 0.95 });
-  const ledM = new THREE.MeshBasicMaterial({ color: '#FFC98A' });
-  const downM = new THREE.MeshBasicMaterial({ color: '#FFF1DC' });
-  const bronze = std('#3B3128', { roughness: 0.35, metalness: 0.6 });
+  const ledM = new THREE.MeshBasicMaterial({ color: '#FFB066' });
+  const ledBlueM = new THREE.MeshBasicMaterial({ color: '#5866FF' });
+  const downM = new THREE.MeshBasicMaterial({ color: '#FFE7C8' });
+  const bronze = std('#3B2C20', { roughness: 0.35, metalness: 0.6 });
+  // flaque de lumière au sol (décalque additif)
+  const lightPool = (x, z, rx, rz, color, opacity, y = 0.012, parent = scene) => {
+    const m = meshAt(new THREE.PlaneGeometry(rx * 2, rz * 2), new THREE.MeshBasicMaterial({ map: glowTex, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false }), x, y, z, parent);
+    m.rotation.x = -Math.PI / 2; m.renderOrder = 2;
+    return m;
+  };
+  // lavage de mur : un cône de lumière qui glisse sur la pierre
+  const washTex = canvasTexture(128, 256, (g, w, h) => {
+    for (let y = 0; y < h; y++) {
+      const k = y / h, half = 6 + k * w * 0.5, a = Math.pow(1 - k, 1.4) * 0.95;
+      const grd = g.createLinearGradient(w / 2 - half, 0, w / 2 + half, 0);
+      grd.addColorStop(0, 'rgba(255,255,255,0)'); grd.addColorStop(0.5, `rgba(255,255,255,${a})`); grd.addColorStop(1, 'rgba(255,255,255,0)');
+      g.fillStyle = grd; g.fillRect(0, y, w, 1);
+    }
+  });
+  const wallWash = (x, y, z, rotY, w, h, color, opacity, up = false) => {
+    const m = meshAt(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: washTex, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false }), x, y, z, scene);
+    m.rotation.y = rotY; if (up) m.rotation.z = Math.PI;
+    m.renderOrder = 3;
+    return m;
+  };
   const steel = std('#D3D8DF', { metalness: 1, roughness: 0.18 });
-  const concrete = std('#CFC6BA', { roughness: 0.9 });
+  const concrete = std('#6B5A4A', { roughness: 0.85 });
 
   const stoneDraw = (base, vein) => (g, w, h) => {
     g.fillStyle = base; g.fillRect(0, 0, w, h);
@@ -182,11 +235,11 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const deckTex = canvasTexture(512, 512, (g, w, h) => {
     for (let i = 0; i < 2; i++) for (let j = 0; j < 2; j++) {
       const v = rnd(-8, 8);
-      g.fillStyle = `rgb(${142 + v},${128 + v},${110 + v})`;
+      g.fillStyle = `rgb(${88 + v},${68 + v},${52 + v})`;
       g.fillRect(i * w / 2, j * h / 2, w / 2, h / 2);
     }
-    stoneDraw('rgba(0,0,0,0)', 'rgba(255,240,220,0.5)')(g, w, h);
-    g.fillStyle = 'rgba(70,58,46,0.7)';
+    stoneDraw('rgba(0,0,0,0)', 'rgba(255,220,180,0.25)')(g, w, h);
+    g.fillStyle = 'rgba(30,22,16,0.8)';
     for (let k = 0; k <= 2; k++) { g.fillRect(k * w / 2 - 1, 0, 2, h); g.fillRect(0, k * h / 2 - 1, w, 2); }
   }, { repeat: [1 / 1.8, 1 / 1.8] });
   const deckShape = new THREE.Shape();
@@ -198,7 +251,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const deckGeo = new THREE.ExtrudeGeometry(deckShape, { depth: 1.9, bevelEnabled: false, curveSegments: 4 });
   deckGeo.rotateX(-Math.PI / 2);
   deckGeo.translate(0, -1.9, 0);
-  const deck = new THREE.Mesh(deckGeo, [std('#ffffff', { map: deckTex, roughness: 0.55 }), std('#7F725F')]);
+  const deck = new THREE.Mesh(deckGeo, [std('#ffffff', { map: deckTex, roughness: 0.42 }), std('#3A2C21')]);
   deck.receiveShadow = true;
   scene.add(deck);
 
@@ -209,7 +262,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   copShape.holes.push(copHole);
   const copGeo = new THREE.ExtrudeGeometry(copShape, { depth: 0.03, bevelEnabled: true, bevelThickness: 0.02, bevelSize: 0.02, bevelSegments: 2, curveSegments: 4 });
   copGeo.rotateX(-Math.PI / 2);
-  const coping = new THREE.Mesh(copGeo, std('#CDBFAE', { roughness: 0.5 }));
+  const coping = new THREE.Mesh(copGeo, std('#8C7764', { roughness: 0.45 }));
   coping.receiveShadow = true;
   scene.add(coping);
 
@@ -218,14 +271,14 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const mosaic = (g, w, h, step) => {
     for (let y = 0; y < h; y += step) for (let x = 0; x < w; x += step) {
       const v = rnd(-10, 10);
-      g.fillStyle = `rgb(${38 + v},${132 + v},${136 + v})`;
+      g.fillStyle = `rgb(${40 + v},${60 + v},${178 + v})`;
       g.fillRect(x, y, step - 1, step - 1);
     }
   };
   const floorTex = canvasTexture(POOL.w * PX, POOL.l * PX, (g, w, h) => {
-    g.fillStyle = '#23767B'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#1E2A8C'; g.fillRect(0, 0, w, h);
     mosaic(g, w, h, PX / 8);
-    g.fillStyle = '#14262E';
+    g.fillStyle = '#0B1040';
     LANES.forEach((lx) => {
       const cx = (lx + POOL.w / 2) * PX;
       g.fillRect(cx - PX * 0.13, 2 * PX, PX * 0.26, (POOL.l - 4) * PX);
@@ -242,17 +295,17 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   });
   textures.push(floorTex);
   const endWallTex = canvasTexture(POOL.w * PX, 1.6 * PX, (g, w, h) => {
-    g.fillStyle = '#23767B'; g.fillRect(0, 0, w, h);
+    g.fillStyle = '#1E2A8C'; g.fillRect(0, 0, w, h);
     mosaic(g, w, h, PX / 8);
-    g.fillStyle = '#14262E';
+    g.fillStyle = '#0B1040';
     LANES.forEach((lx) => {
       const cx = (lx + POOL.w / 2) * PX;
       g.fillRect(cx - PX * 0.13, PX * 0.3, PX * 0.26, h - PX * 0.3);
       g.fillRect(cx - PX * 0.5, PX * 0.48, PX, PX * 0.26);
     });
   });
-  const sideWallTex = canvasTexture(256, 256, (g, w, h) => { g.fillStyle = '#23767B'; g.fillRect(0, 0, w, h); mosaic(g, w, h, 16); }, { repeat: [POOL.l, 1.6] });
-  const poolGlow = { emissive: '#2E9C9C', emissiveIntensity: 0.38 };
+  const sideWallTex = canvasTexture(256, 256, (g, w, h) => { g.fillStyle = '#1E2A8C'; g.fillRect(0, 0, w, h); mosaic(g, w, h, 16); }, { repeat: [POOL.l, 1.6] });
+  const poolGlow = { emissive: '#4553F0', emissiveIntensity: 0.45 };
   const pool = new THREE.Group();
   const floor = mesh(new THREE.PlaneGeometry(POOL.w, POOL.l), std('#ffffff', { map: floorTex, roughness: 0.4, emissiveMap: floorTex, ...poolGlow }), 0, POOL.floor, -POOL.l / 2, pool);
   floor.rotation.x = -Math.PI / 2;
@@ -268,7 +321,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   mkWall(POOL.l, sideWallTex, v3(POOL.w / 2 - 0.004, POOL.floor / 2, -POOL.l / 2), -Math.PI / 2);
   // projecteurs immergés et liseré lumineux sous la margelle
   {
-    const lampM = new THREE.MeshBasicMaterial({ color: '#E9FBFF' });
+    const lampM = new THREE.MeshBasicMaterial({ color: '#DDE2FF' });
     const lampGeo = new THREE.CircleGeometry(0.1, 24);
     for (let z = -2; z >= -14; z -= 4) {
       [-1, 1].forEach((side) => {
@@ -276,7 +329,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         l.rotation.y = -side * Math.PI / 2;
       });
     }
-    const stripM = new THREE.MeshBasicMaterial({ color: '#CFF3FF', transparent: true, opacity: 0.7 });
+    const stripM = new THREE.MeshBasicMaterial({ color: '#8E98FF', transparent: true, opacity: 0.8 });
     [[POOL.w, 0, -0.012], [POOL.w, 0, -POOL.l + 0.012]].forEach(([w, x, z]) => mesh(new THREE.BoxGeometry(w, 0.016, 0.01), stripM, x, -0.07, z, pool));
     [-1, 1].forEach((side) => mesh(new THREE.BoxGeometry(0.01, 0.016, POOL.l), stripM, side * (POOL.w / 2 - 0.012), -0.07, -POOL.l / 2, pool));
   }
@@ -319,7 +372,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         float a = cells(p, uTime*0.9);
         float b = cells(p*1.6 + 3.1, uTime*1.15);
         float c = pow(1.0 - smoothstep(0.0, 0.16, a), 2.2) * 0.75 + pow(1.0 - smoothstep(0.0, 0.12, b), 2.0) * 0.45;
-        gl_FragColor = vec4(vec3(0.85, 1.0, 0.96) * c * uStrength, 1.0);
+        gl_FragColor = vec4(vec3(0.78, 0.84, 1.0) * c * uStrength, 1.0);
       }`,
   });
   const caustics = mesh(new THREE.PlaneGeometry(POOL.w, POOL.l), causticMat, 0, POOL.floor + 0.006, -POOL.l / 2);
@@ -332,11 +385,11 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     transparent: true, depthWrite: false, side: THREE.DoubleSide,
     uniforms: {
       uTime: { value: 0 },
-      uShallow: { value: new THREE.Color('#3BB3AE') },
-      uDeep: { value: new THREE.Color('#145E6B') },
-      uCeil: { value: new THREE.Color('#2A231E') },
-      uWall: { value: new THREE.Color('#B89A78') },
-      uLed: { value: new THREE.Color('#FFD39A') },
+      uShallow: { value: new THREE.Color('#3E5CF0') },
+      uDeep: { value: new THREE.Color('#121A78') },
+      uCeil: { value: new THREE.Color('#120D0A') },
+      uWall: { value: new THREE.Color('#6A4A33') },
+      uLed: { value: new THREE.Color('#FFB066') },
       uFill: { value: 1 },
     },
     vertexShader: /* glsl */`
@@ -363,8 +416,8 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
           // dessous de la surface : fenêtre de Snell lumineuse, miroir sombre en incidence rasante
           float cosv = clamp(-dot(vec3(n.x, -n.y, n.z), -V), 0.0, 1.0);
           float window = smoothstep(0.55, 0.85, abs(V.y));
-          vec3 under = mix(vec3(0.06, 0.32, 0.36), vec3(0.62, 0.95, 0.9), window);
-          under += vec3(0.9, 1.0, 0.95) * smoothstep(0.7, 1.0, vnoise(p*5.0 + uTime*0.8)) * 0.35 * window;
+          vec3 under = mix(vec3(0.05, 0.07, 0.3), vec3(0.5, 0.58, 1.0), window);
+          under += vec3(0.85, 0.9, 1.0) * smoothstep(0.7, 1.0, vnoise(p*5.0 + uTime*0.8)) * 0.35 * window;
           gl_FragColor = vec4(under * (0.85 + 0.15 * cosv), 0.97 * uFill);
           #include <tonemapping_fragment>
           #include <colorspace_fragment>
@@ -407,7 +460,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     const col = new THREE.Color();
     for (let i = 0; i < nFloats; i++) {
       const z = -0.15 - i * SPACING;
-      col.set(Math.min(-z, POOL.l + z) < 1.6 ? '#EDEAE4' : '#16191D');
+      col.set(Math.min(-z, POOL.l + z) < 1.6 ? COLORS.orange : '#141210');
       m.setColorAt(i, col);
     }
     m.userData = { x: rx, ri };
@@ -435,19 +488,19 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const hallMid = (HALL.near + HALL.far) / 2;
   // alcôves : pierre rétroéclairée (le haut du mur reçoit la lumière de la corniche)
   const stoneTex = canvasTexture(1024, 256, (g, w, h) => {
-    stoneDraw('#CBB99E', 'rgba(255,245,230,0.6)')(g, w, h);
-    g.fillStyle = 'rgba(90,72,55,0.35)';
+    stoneDraw('#8A6A4E', 'rgba(255,215,170,0.35)')(g, w, h);
+    g.fillStyle = 'rgba(30,20,12,0.45)';
     for (let k = 0; k <= 4; k++) g.fillRect(k * w / 4 - 1, 0, 2, h);
     const grd = g.createLinearGradient(0, 0, 0, h);
-    grd.addColorStop(0, 'rgba(255,236,205,0.6)');
-    grd.addColorStop(0.45, 'rgba(255,236,205,0.08)');
-    grd.addColorStop(1, 'rgba(30,20,10,0.18)');
+    grd.addColorStop(0, 'rgba(255,190,120,0.55)');
+    grd.addColorStop(0.4, 'rgba(255,190,120,0.06)');
+    grd.addColorStop(1, 'rgba(10,6,3,0.45)');
     g.fillStyle = grd; g.fillRect(0, 0, w, h);
   }, { repeat: [6, 1] });
-  const alcoveM = std('#ffffff', { map: stoneTex, emissiveMap: stoneTex, emissive: '#FFE3C0', emissiveIntensity: 0.26, roughness: 0.8 });
-  const bandM = std('#CDBFAA', { roughness: 0.75 });
-  const darkWall = std('#2B2621', { roughness: 0.85 });
-  const columnM = std('#2E2925', { roughness: 0.5, metalness: 0.15 });
+  const alcoveM = std('#ffffff', { map: stoneTex, emissiveMap: stoneTex, emissive: '#FFB06A', emissiveIntensity: 0.22, roughness: 0.75 });
+  const bandM = std('#5E4A3B', { roughness: 0.6 });
+  const darkWall = std('#1C1510', { roughness: 0.9 });
+  const columnM = std('#24180F', { roughness: 0.38, metalness: 0.2 });
   [-1, 1].forEach((side) => {
     const sx = side * HALL.x;
     const a = mesh(new THREE.PlaneGeometry(hallLen, HALL.mezz), alcoveM, sx, HALL.mezz / 2, hallMid);
@@ -470,6 +523,8 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     for (let z = 1.5; z > HALL.far; z -= 4) {
       const c = mesh(rbox(0.55, HALL.h, 0.55, 0.02), columnM, side * HALL.col, HALL.h / 2, z);
       c.castShadow = true; c.receiveShadow = true;
+      // fente lumineuse verticale côté bassin
+      mesh(new THREE.BoxGeometry(0.02, 2.2, 0.06), ledM, side * (HALL.col - 0.28), 1.5, z);
     }
   });
   // passerelle au fond (comme une mezzanine qui relie les deux côtés)
@@ -477,12 +532,22 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   mesh(new THREE.PlaneGeometry(HALL.x * 2 - 6, 1.0), new THREE.MeshStandardMaterial({ color: '#BFD6D8', transparent: true, opacity: 0.16, roughness: 0.05, side: THREE.DoubleSide, depthWrite: false }), 0, HALL.mezz + 0.92, HALL.far + 1.4);
   mesh(new THREE.BoxGeometry(HALL.x * 2 - 6, 0.05, 0.05), bronze, 0, HALL.mezz + 1.44, HALL.far + 1.4);
   // plafond sombre, double cadre de LED chaudes
-  const ceil = mesh(new THREE.PlaneGeometry(HALL.x * 2, hallLen), std('#1F1B18', { roughness: 0.9 }), 0, HALL.h, hallMid);
+  const ceil = mesh(new THREE.PlaneGeometry(HALL.x * 2, hallLen), std('#120D0A', { roughness: 0.9 }), 0, HALL.h, hallMid);
   ceil.rotation.x = Math.PI / 2;
-  [[5.4, 0.3], [3.2, 2.3]].forEach(([hx, inset]) => {
+  ceil.castShadow = true; // le plafond fait écran au soleil : la lumière n'entre que par la porte
+  // cadre extérieur ambre, cadre intérieur bleu Majorelle
+  [[5.4, 0.3, ledM], [3.2, 2.3, ledBlueM]].forEach(([hx, inset, m]) => {
     const z0 = HALL.near - 0.8 - inset, z1 = HALL.far + 0.8 + inset, len = z0 - z1, mid = (z0 + z1) / 2;
-    [-1, 1].forEach((s) => mesh(new THREE.BoxGeometry(0.06, 0.03, len), ledM, s * hx, HALL.h - 0.03, mid));
-    [z0, z1].forEach((z) => mesh(new THREE.BoxGeometry(hx * 2, 0.03, 0.06), ledM, 0, HALL.h - 0.03, z));
+    [-1, 1].forEach((s) => mesh(new THREE.BoxGeometry(0.06, 0.03, len), m, s * hx, HALL.h - 0.03, mid));
+    [z0, z1].forEach((z) => mesh(new THREE.BoxGeometry(hx * 2, 0.03, 0.06), m, 0, HALL.h - 0.03, z));
+  });
+  // rythme des travées : lavage ambre sur la pierre des alcôves, lavage bleu au-dessus des mezzanines
+  [-1, 1].forEach((side) => {
+    for (let z = -0.5; z > HALL.far + 1; z -= 4) {
+      [-0.9, 0.9].forEach((dz) => wallWash(side * (HALL.x - 0.02), HALL.mezz - 1.5, z + dz, -side * Math.PI / 2, 1.5, 3.0, '#FFA65A', 0.5));
+      wallWash(side * (HALL.x - 0.02), HALL.mezz + 2.2, z, -side * Math.PI / 2, 2.2, 3.3, '#4B57FF', 0.42, true);
+      lightPool(side * 7.6, z, 1.1, 1.4, '#FFB070', 0.22);
+    }
   });
   // rubans obliques au-dessus des mezzanines
   [-1, 1].forEach((side) => {
@@ -510,19 +575,29 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   {
     const zb = HALL.far;
     const doorW = 4, doorH = 2.8;
-    const farM = std('#ffffff', { map: stoneTex, emissiveMap: stoneTex, emissive: '#FFE3C0', emissiveIntensity: 0.18, roughness: 0.8 });
+    const farM = std('#ffffff', { map: stoneTex, emissiveMap: stoneTex, emissive: '#FFB06A', emissiveIntensity: 0.16, roughness: 0.8 });
     const sideW = HALL.x - doorW / 2;
     [-1, 1].forEach((s) => {
-      mesh(new THREE.PlaneGeometry(sideW, HALL.mezz), farM, s * (doorW / 2 + sideW / 2), HALL.mezz / 2, zb).receiveShadow = true;
-      mesh(new THREE.PlaneGeometry(sideW, HALL.h - HALL.mezz), darkWall, s * (doorW / 2 + sideW / 2), (HALL.h + HALL.mezz) / 2, zb);
+      const lo = mesh(new THREE.PlaneGeometry(sideW, HALL.mezz), farM, s * (doorW / 2 + sideW / 2), HALL.mezz / 2, zb);
+      lo.receiveShadow = true; lo.castShadow = true;
+      mesh(new THREE.PlaneGeometry(sideW, HALL.h - HALL.mezz), darkWall, s * (doorW / 2 + sideW / 2), (HALL.h + HALL.mezz) / 2, zb).castShadow = true;
       mesh(new THREE.BoxGeometry(0.14, doorH, 0.3), bronze, s * (doorW / 2 + 0.07), doorH / 2, zb);
     });
-    mesh(new THREE.PlaneGeometry(doorW, HALL.h - doorH), darkWall, 0, (HALL.h + doorH) / 2, zb);
+    mesh(new THREE.PlaneGeometry(doorW, HALL.h - doorH), darkWall, 0, (HALL.h + doorH) / 2, zb).castShadow = true;
+    // halo du couchant dans l'embrasure
+    const haze = mesh(new THREE.PlaneGeometry(doorW + 1.2, doorH + 0.8), new THREE.MeshBasicMaterial({ map: glowTex, color: '#FF9A50', transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }), 0, doorH / 2, zb + 0.15);
+    haze.renderOrder = 9;
     mesh(new THREE.BoxGeometry(doorW + 0.28, 0.14, 0.3), bronze, 0, doorH + 0.07, zb);
     // façade côté terrasse
-    const facade = std('#B9AC98', { roughness: 0.85 });
-    [-1, 1].forEach((s) => { const f = mesh(new THREE.PlaneGeometry(sideW + 6, HALL.h), facade, s * (doorW / 2 + (sideW + 6) / 2), HALL.h / 2, zb - 0.03); f.rotation.y = Math.PI; });
-    const ft = mesh(new THREE.PlaneGeometry(doorW, HALL.h - doorH), facade, 0, (HALL.h + doorH) / 2, zb - 0.03); ft.rotation.y = Math.PI;
+    const facade = std('#7B6350', { roughness: 0.85 });
+    [-1, 1].forEach((s) => { const f = mesh(new THREE.PlaneGeometry(sideW + 6, HALL.h), facade, s * (doorW / 2 + (sideW + 6) / 2), HALL.h / 2, zb - 0.03); f.rotation.y = Math.PI; f.castShadow = true; f.receiveShadow = true; });
+    const ft = mesh(new THREE.PlaneGeometry(doorW, HALL.h - doorH), facade, 0, (HALL.h + doorH) / 2, zb - 0.03); ft.rotation.y = Math.PI; ft.castShadow = true;
+    // appliques de façade
+    [-1, 1].forEach((s) => {
+      mesh(rbox(0.16, 0.5, 0.12, 0.03), bronze, s * (doorW / 2 + 0.6), 2.3, zb - 0.1);
+      const sc = mesh(new THREE.PlaneGeometry(1.2, 2.4), new THREE.MeshBasicMaterial({ map: washTex, color: '#FFB066', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }), s * (doorW / 2 + 0.6), 1.2, zb - 0.06);
+      sc.rotation.y = Math.PI;
+    });
     // vantaux vitrés ouverts
     [-1, 1].forEach((s) => {
       const leaf = new THREE.Group();
@@ -538,20 +613,20 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const laneNames = [['1', 'AQUABABY'], ['2', 'ENFANTS'], ['3', 'JEUNES · ADULTES']];
   [...LANES].reverse().forEach((lx, i) => {
     const b = new THREE.Group();
-    mesh(rbox(0.5, 0.62, 0.5, 0.04, 4), std('#F3F0EA', { roughness: 0.3 }), 0, 0.31, 0, b);
+    mesh(rbox(0.5, 0.62, 0.5, 0.04, 4), std('#3A2C22', { roughness: 0.35, metalness: 0.1 }), 0, 0.31, 0, b);
     const top = mesh(rbox(0.56, 0.05, 0.66, 0.02, 3), std(COLORS.teak, { roughness: 0.55 }), 0, 0.665, -0.04, b);
     top.rotation.x = 0.12;
     const tex = canvasTexture(256, 256, (g, w) => {
-      g.fillStyle = '#F3F0EA'; g.fillRect(0, 0, w, w);
-      g.fillStyle = COLORS.ink; g.font = `300 132px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillStyle = '#1A130E'; g.fillRect(0, 0, w, w);
+      g.fillStyle = '#FFB27A'; g.font = `300 132px ${FONT}`; g.textAlign = 'center'; g.textBaseline = 'middle';
       g.fillText(laneNames[i][0], w / 2, 104);
       g.fillStyle = COLORS.orange; g.fillRect(w / 2 - 18, 178, 36, 3);
-      g.fillStyle = COLORS.ink; g.font = `600 ${laneNames[i][1].length > 10 ? 17 : 21}px ${FONT}`;
+      g.fillStyle = '#E9DCCB'; g.font = `600 ${laneNames[i][1].length > 10 ? 17 : 21}px ${FONT}`;
       if ('letterSpacing' in g) g.letterSpacing = '4px';
       g.fillText(laneNames[i][1], w / 2, 214);
     });
     textures.push(tex);
-    const plate = mesh(new THREE.PlaneGeometry(0.42, 0.42), std('#ffffff', { map: tex, roughness: 0.4 }), 0, 0.33, -0.252, b);
+    const plate = mesh(new THREE.PlaneGeometry(0.42, 0.42), std('#ffffff', { map: tex, roughness: 0.4, emissiveMap: tex, emissive: '#ffffff', emissiveIntensity: 0.35 }), 0, 0.33, -0.252, b);
     plate.rotation.y = Math.PI;
     mesh(new THREE.TorusGeometry(0.16, 0.013, 8, 24, Math.PI), steel, 0, 0.55, -0.28, b);
     b.position.set(lx, 0, 0.6);
@@ -571,7 +646,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   [
     { x: -2.5, color: '#FF9550', sub: 'sensation' },
     { x: 0, color: '#FFD9A0', sub: 'expression' },
-    { x: 2.5, color: '#7C88FF', sub: 'application' },
+    { x: 2.5, color: '#5562FF', sub: 'application' },
   ].forEach((d, i) => {
     const g = new THREE.Group();
     mesh(orbGeo, phys(d.color, { emissive: d.color, emissiveIntensity: 0.85, roughness: 0.35, clearcoat: 1, clearcoatRoughness: 0.15 }), 0, 0.1, 0, g);
@@ -580,7 +655,6 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     const onWater = mesh(poolGlowGeo, new THREE.MeshBasicMaterial({ map: glowTex, color: d.color, transparent: true, opacity: 0.5, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 0.012, 0, g);
     onWater.renderOrder = 7;
     g.add(halo);
-    if (!low) { const lamp = new THREE.PointLight(d.color, 3, 5, 1.5); lamp.position.y = 0.35; g.add(lamp); }
     g.position.set(d.x, POOL.water, -7.2 - (i === 1 ? 0.5 : 0));
     g.userData = { station: 'methode', sub: d.sub };
     scene.add(g);
@@ -593,7 +667,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   /* ---------- 2 · chaise de maître-nageur (Votre coach) ---------- */
   const chair = new THREE.Group();
   {
-    const white = std('#F4F1EB', { roughness: 0.35 });
+    const white = std('#2C2017', { roughness: 0.35, metalness: 0.4 });
     const teak = std(COLORS.teak, { roughness: 0.55 });
     const legGeo = new THREE.CylinderGeometry(0.03, 0.036, 1.62, 12);
     [[-0.32, -0.3], [0.32, -0.3], [-0.32, 0.3], [0.32, 0.3]].forEach(([x, z]) => {
@@ -604,7 +678,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     mesh(rbox(0.72, 0.06, 0.6, 0.025, 3), teak, 0, 1.64, 0, chair);
     mesh(rbox(0.72, 0.56, 0.05, 0.022, 3), teak, 0, 1.97, 0.3, chair);
     const towelTex = canvasTexture(256, 384, (g, w, h) => {
-      g.fillStyle = COLORS.navy; g.fillRect(0, 0, w, h);
+      g.fillStyle = COLORS.majorelle; g.fillRect(0, 0, w, h);
       g.fillStyle = COLORS.orange; g.fillRect(0, h - 40, w, 4);
       if (logoImg) {
         g.fillStyle = '#ffffff'; g.beginPath(); g.arc(w / 2, 170, 54, 0, Math.PI * 2); g.fill();
@@ -646,7 +720,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     s.lineTo(0.22, 0.12); s.quadraticCurveTo(0.22, 0.34, 0, 0.36); s.quadraticCurveTo(-0.22, 0.34, -0.22, 0.12); s.lineTo(-0.22, -0.3);
     const g = new THREE.ExtrudeGeometry(s, { depth: 0.035, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.02, bevelSegments: 3, curveSegments: 18 });
     g.rotateX(-Math.PI / 2);
-    kick.add(new THREE.Mesh(g, phys(COLORS.navy, { roughness: 0.6, clearcoat: 0.25 })));
+    kick.add(new THREE.Mesh(g, phys(COLORS.majorelle, { roughness: 0.6, clearcoat: 0.25 })));
     const stripe = mesh(new THREE.PlaneGeometry(0.44, 0.02), std(COLORS.orange), 0, 0.06, 0.05, kick);
     stripe.rotation.x = -Math.PI / 2;
   }
@@ -666,7 +740,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     const wood = std(COLORS.teak, { roughness: 0.55 });
     for (let k = 0; k < 3; k++) mesh(rbox(0.14, 0.045, 2.0, 0.015), wood, -0.16 + k * 0.16, 0.45, 0, bench);
     [-0.82, 0.82].forEach((z) => mesh(rbox(0.5, 0.43, 0.07, 0.015), concrete, 0, 0.215, z, bench));
-    [['#F6F3EC'], ['#F6F3EC', COLORS.navy], ['#F6F3EC', COLORS.cream, COLORS.navy]].forEach((stack, si) => {
+    [['#EFE6D8'], ['#EFE6D8', COLORS.majorelle], ['#EFE6D8', COLORS.orange, COLORS.majorelle]].forEach((stack, si) => {
       stack.forEach((c, k) => {
         const t = mesh(rbox(0.4, 0.072, 0.34, 0.03, 3), std(c, { roughness: 0.95 }), 0, 0.51 + k * 0.075, -0.58 + si * 0.58, bench);
         t.rotation.y = k % 2 ? 0.04 : -0.03;
@@ -724,7 +798,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   {
     mesh(new THREE.TorusGeometry(0.06, 0.012, 8, 16, Math.PI), steel, 0, 0.42, 0.06, buoyStand);
     const stripes = canvasTexture(512, 64, (g, w, h) => {
-      for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#F6F3EC' : COLORS.navy; g.fillRect((i * w) / 8, 0, w / 8, h); }
+      for (let i = 0; i < 8; i++) { g.fillStyle = i % 2 ? '#F2EADF' : COLORS.majorelle; g.fillRect((i * w) / 8, 0, w / 8, h); }
     });
     const buoy = mesh(new THREE.TorusGeometry(0.34, 0.1, 24, 64), phys('#ffffff', { map: stripes, roughness: 0.4, clearcoat: 0.6 }), 0, 0, 0.14, buoyStand);
     buoy.name = 'buoy';
@@ -737,16 +811,23 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   clickables.push({ root: buoyStand, station: 'faq' });
   anchors.faq = v3(4.7, 2.3, HALL.far + 0.1);
 
+  /* ---------- spots : chaque étape a sa flaque de lumière ---------- */
+  spot(0, HALL.h - 0.1, 2.0, 0, 0, 0.6, { angle: 0.55, intensity: 55 });
+  spot(4.3, HALL.h - 0.1, -6.6, 5.0, 0, -7.6, { castShadow: !low });
+  spot(-3.1, HALL.h - 0.1, -2.6, -3.75, 0, -3.3, { intensity: 40 });
+  if (!low) spot(4.3, HALL.h - 0.1, -11.2, 5.0, 0, -12.2, { intensity: 42 });
+  if (!low) spot(4.0, HALL.h - 0.1, -17.4, 4.7, 1.4, -19.9, { intensity: 40, angle: 0.35 });
+
   /* ---------- transats dans les alcôves, plantes ---------- */
   const lounger = (x, z, ry) => {
     const g = new THREE.Group();
     const wood = std(COLORS.teak, { roughness: 0.55 });
-    const cushionM = std(COLORS.cream, { roughness: 0.95 });
+    const cushionM = std('#C2AD92', { roughness: 0.95 });
     mesh(rbox(0.66, 0.07, 1.35, 0.025, 3), wood, 0, 0.3, 0.2, g);
     mesh(rbox(0.66, 0.07, 0.7, 0.025, 3), wood, 0, 0.5, -0.72, g).rotation.x = 0.62;
     mesh(rbox(0.6, 0.08, 1.3, 0.035, 3), cushionM, 0, 0.37, 0.2, g);
     mesh(rbox(0.6, 0.08, 0.66, 0.035, 3), cushionM, 0, 0.56, -0.68, g).rotation.x = 0.62;
-    mesh(rbox(0.42, 0.05, 0.3, 0.02), std(COLORS.navy, { roughness: 0.95 }), 0, 0.435, 0.55, g);
+    mesh(rbox(0.42, 0.05, 0.3, 0.02), std(COLORS.majorelle, { roughness: 0.95 }), 0, 0.435, 0.55, g);
     [[-0.28, 0.75], [0.28, 0.75], [-0.28, -0.3], [0.28, -0.3]].forEach(([lx, lz]) => mesh(rbox(0.05, 0.28, 0.05, 0.01), wood, lx, 0.14, lz, g));
     g.position.set(x, 0, z); g.rotation.y = ry;
     scene.add(shadow(g));
@@ -786,29 +867,37 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         g.fillStyle = 'rgba(25,15,8,0.6)'; g.fillRect(0, r * ph, w, 2);
       }
     }, { repeat: [LW / 2.6, LD / 2.6] });
-    const fl = mesh(new THREE.PlaneGeometry(LW, LD), std('#ffffff', { map: woodTex, roughness: 0.5 }), 0, 0.002, LM, lounge);
+    const fl = mesh(new THREE.PlaneGeometry(LW, LD), std('#9C8577', { map: woodTex, roughness: 0.42 }), 0, 0.002, LM, lounge);
     fl.rotation.x = -Math.PI / 2; fl.receiveShadow = true;
     // murs grège, plafond à caisson
-    const greige = std('#8E7F70', { roughness: 0.9 });
+    const greige = std('#4E3B2E', { roughness: 0.9 });
     [-1, 1].forEach((s) => { const w = mesh(new THREE.PlaneGeometry(LD, LOUNGE.h), greige, s * LOUNGE.x, LOUNGE.h / 2, LM, lounge); w.rotation.y = -s * Math.PI / 2; w.receiveShadow = true; });
     const back = mesh(new THREE.PlaneGeometry(LW, LOUNGE.h), greige, 0, LOUNGE.h / 2, LZ1, lounge); back.rotation.y = Math.PI;
-    const lc = mesh(new THREE.PlaneGeometry(LW, LD), std('#8A7B6C', { roughness: 0.95 }), 0, LOUNGE.h, LM, lounge); lc.rotation.x = Math.PI / 2;
-    const coffer = mesh(new THREE.PlaneGeometry(7, 5.6), std('#9B8C7C', { roughness: 0.95 }), -0.6, LOUNGE.h - 0.12, LM + 0.2, lounge); coffer.rotation.x = Math.PI / 2;
-    [[-0.6 - 3.5, 0], [-0.6 + 3.5, 0]].forEach(([x]) => mesh(new THREE.BoxGeometry(0.04, 0.04, 5.6), ledM, x, LOUNGE.h - 0.1, LM + 0.2, lounge));
-    [LM + 0.2 - 2.8, LM + 0.2 + 2.8].forEach((z) => mesh(new THREE.BoxGeometry(7, 0.04, 0.04), ledM, -0.6, LOUNGE.h - 0.1, z, lounge));
+    const lc = mesh(new THREE.PlaneGeometry(LW, LD), std('#2E2219', { roughness: 0.95 }), 0, LOUNGE.h, LM, lounge); lc.rotation.x = Math.PI / 2;
+    const coffer = mesh(new THREE.PlaneGeometry(7, 5.6), std('#3A2B20', { roughness: 0.95 }), -0.6, LOUNGE.h - 0.12, LM + 0.2, lounge); coffer.rotation.x = Math.PI / 2;
+    // caisson du plafond : gorge lumineuse bleu Majorelle
+    [[-0.6 - 3.5, 0], [-0.6 + 3.5, 0]].forEach(([x]) => mesh(new THREE.BoxGeometry(0.04, 0.04, 5.6), ledBlueM, x, LOUNGE.h - 0.1, LM + 0.2, lounge));
+    [LM + 0.2 - 2.8, LM + 0.2 + 2.8].forEach((z) => mesh(new THREE.BoxGeometry(7, 0.04, 0.04), ledBlueM, -0.6, LOUNGE.h - 0.1, z, lounge));
+    const cove = mesh(new THREE.PlaneGeometry(7.6, 6.2), new THREE.MeshBasicMaterial({ map: glowTex, color: '#3F4BFF', transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }), -0.6, LOUNGE.h - 0.13, LM + 0.2, lounge);
+    cove.rotation.x = Math.PI / 2;
     for (let x = -5.5; x <= 5.5; x += 2.2) for (let z = LZ0 + 1.4; z < LZ1; z += 2.4) {
       if (Math.abs(x + 0.6) < 3.4 && Math.abs(z - LM - 0.2) < 2.7) continue;
       mesh(new THREE.CircleGeometry(0.06, 16), downM, x, LOUNGE.h - 0.005, z, lounge).rotation.x = Math.PI / 2;
+      lightPool(x, z, 0.9, 0.9, '#FFB070', 0.16, 0.01, lounge);
     }
 
     // bibliothèque intégrée + cheminée + écran (mur gauche)
-    const unitM = std('#9A8B7C', { roughness: 0.8 });
-    const nicheM = std('#6F6255', { roughness: 0.9 });
+    const unitM = std('#3E2E22', { roughness: 0.55 });
+    const nicheM = std('#1E1610', { roughness: 0.9 });
     const ux = -LOUNGE.x + 0.24, uz0 = 5.4, uz1 = 12.0, uh = 3.0;
     mesh(new THREE.BoxGeometry(0.06, uh, uz1 - uz0), nicheM, -LOUNGE.x + 0.03, uh / 2, (uz0 + uz1) / 2, lounge);
     for (let z = uz0; z <= uz1 + 0.01; z += (uz1 - uz0) / 4) mesh(new THREE.BoxGeometry(0.46, uh, 0.08), unitM, ux, uh / 2, z, lounge);
     [0.06, 1.05, 2.0, uh - 0.05].forEach((y) => {
-      [[uz0, uz0 + 1.65], [uz1 - 1.65, uz1]].forEach(([a, b]) => mesh(new THREE.BoxGeometry(0.46, 0.06, b - a), unitM, ux, y, (a + b) / 2, lounge));
+      [[uz0, uz0 + 1.65], [uz1 - 1.65, uz1]].forEach(([a, b]) => {
+        mesh(new THREE.BoxGeometry(0.46, 0.06, b - a), unitM, ux, y, (a + b) / 2, lounge);
+        // réglette ambrée sous chaque tablette
+        if (y > 0.5) mesh(new THREE.BoxGeometry(0.02, 0.012, b - a - 0.1), ledM, ux + 0.2, y - 0.036, (a + b) / 2, lounge);
+      });
     });
     const fz = (uz0 + uz1) / 2;
     mesh(new THREE.BoxGeometry(0.46, uh, 3.3), unitM, ux + 0.02, uh / 2, fz, lounge);
@@ -825,7 +914,8 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     const fire = mesh(new THREE.PlaneGeometry(1.1, 0.5), new THREE.MeshBasicMaterial({ map: fireTex, transparent: true, blending: THREE.AdditiveBlending, depthWrite: false }), ux + 0.26, 0.5, fz, lounge);
     fire.rotation.y = Math.PI / 2;
     fire.name = 'fire';
-    mesh(new THREE.BoxGeometry(0.5, 0.08, 1.9), std('#CBBCA8'), ux + 0.04, 0.9, fz, lounge);
+    mesh(new THREE.BoxGeometry(0.5, 0.08, 1.9), std('#8C7764', { roughness: 0.4 }), ux + 0.04, 0.9, fz, lounge);
+    lightPool(ux + 1.1, fz, 1.6, 1.2, '#FF8A3A', 0.35, 0.012, lounge);
     const tvTex = canvasTexture(512, 288, (g, w, h) => {
       const grd = g.createLinearGradient(0, 0, w, h);
       grd.addColorStop(0, '#141A5E'); grd.addColorStop(0.6, '#3B3FA8'); grd.addColorStop(1, '#C97A64');
@@ -849,7 +939,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
 
     // tapis rond
     const rugTex = canvasTexture(512, 512, (g, w) => {
-      g.fillStyle = '#B9AE9C'; g.beginPath(); g.arc(w / 2, w / 2, w / 2, 0, Math.PI * 2); g.fill();
+      g.fillStyle = '#7E6A58'; g.beginPath(); g.arc(w / 2, w / 2, w / 2, 0, Math.PI * 2); g.fill();
       for (let i = 0; i < 6000; i++) { g.fillStyle = `rgba(255,255,255,${rnd(0, 0.08)})`; g.fillRect(Math.random() * w, Math.random() * w, 2, 2); }
       g.strokeStyle = 'rgba(80,65,50,0.35)'; g.lineWidth = 10; g.beginPath(); g.arc(w / 2, w / 2, w / 2 - 22, 0, Math.PI * 2); g.stroke();
     });
@@ -877,7 +967,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     mesh(new THREE.CylinderGeometry(0.34, 0.4, 0.36, 32), std('#B08D57', { roughness: 0.3, metalness: 0.7 }), -2.7, 0.19, 8.5, lounge);
     mesh(new THREE.CylinderGeometry(0.08, 0.06, 0.16, 24), std('#E9E2D6'), -2.5, 0.51, 8.4, lounge);
     // fauteuils velours marine
-    const velvet = phys('#22305A', { roughness: 0.85, sheen: 1, sheenColor: new THREE.Color('#6C7FB8'), sheenRoughness: 0.5 });
+    const velvet = phys('#2A35C8', { roughness: 0.85, sheen: 1, sheenColor: new THREE.Color('#7C86FF'), sheenRoughness: 0.45 });
     const armchair = (x, z, tx, tz) => {
       const ry = Math.atan2(-(tz - z), tx - x);
       const g = new THREE.Group();
@@ -894,10 +984,12 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     mesh(new THREE.CylinderGeometry(0.3, 0.3, 0.42, 32), phys('#C08A33', { roughness: 0.8, sheen: 0.6 }), 1.2, 0.21, 5.9, lounge).castShadow = true;
 
     // colonne marine
-    mesh(rbox(0.5, LOUNGE.h, 0.5, 0.02), std('#1D2639', { roughness: 0.6 }), 2.6, LOUNGE.h / 2, 7.4, lounge).castShadow = true;
+    mesh(rbox(0.5, LOUNGE.h, 0.5, 0.02), std('#1B2276', { roughness: 0.5 }), 2.6, LOUNGE.h / 2, 7.4, lounge).castShadow = true;
 
     // bar à droite : bois sombre, plateau pierre, jardinière, suspensions
-    const barM = std('#3A2A20', { roughness: 0.45 });
+    const barM = std('#2A1C14', { roughness: 0.4 });
+    // fond de bar rétroéclairé orange
+    mesh(new THREE.PlaneGeometry(6.4, 1.6), new THREE.MeshBasicMaterial({ map: washTex, color: '#FF8E45', transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }), LOUNGE.x - 0.02, 2.2, 8.3, lounge).rotation.y = -Math.PI / 2;
     mesh(rbox(0.72, 1.05, 6.2, 0.03), barM, 5.3, 0.525, 8.3, lounge).castShadow = true;
     mesh(rbox(0.86, 0.06, 6.4, 0.02), std('#D8CFC2', { roughness: 0.35 }), 5.3, 1.08, 8.3, lounge);
     const planter = mesh(rbox(0.4, 0.34, 5.8, 0.15, 3), leafM, 5.45, 1.28, 8.3, lounge);
@@ -912,13 +1004,25 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     plant(6.2, 12.9, 1.0, lounge);
     plant(-6.1, 13.2, 0.9, lounge);
 
-    // lumière chaude du salon
-    const fireLight = new THREE.PointLight('#FF9A50', 2.4, 6, 1.6);
+    // lampadaire près du canapé
+    mesh(new THREE.CylinderGeometry(0.012, 0.012, 1.5, 8), bronze, -5.9, 0.75, 10.6, lounge);
+    mesh(new THREE.CylinderGeometry(0.16, 0.18, 0.02, 24), bronze, -5.9, 0.01, 10.6, lounge);
+    mesh(new THREE.CylinderGeometry(0.2, 0.26, 0.32, 32, 1, true), new THREE.MeshStandardMaterial({ color: '#F3D9B4', emissive: '#FFB566', emissiveIntensity: 1.1, side: THREE.DoubleSide }), -5.9, 1.62, 10.6, lounge);
+    lightPool(-5.6, 10.4, 1.4, 1.4, '#FFB070', 0.25, 0.012, lounge);
+
+    // lumière chaude et tamisée du salon
+    const fireLight = new THREE.PointLight('#FF8A3A', 4, 7, 1.5);
     fireLight.position.set(ux + 0.7, 0.7, fz);
     fireLight.name = 'fireLight';
-    const warm = new THREE.PointLight('#FFCF9A', 7, 10, 1.6);
-    warm.position.set(-1.2, 3.0, 8.4);
-    lounge.add(fireLight, warm);
+    lounge.add(fireLight);
+    if (!low) {
+      const lampLight = new THREE.PointLight('#FFB566', 3.2, 6, 1.5);
+      lampLight.position.set(-5.9, 1.6, 10.6);
+      lounge.add(lampLight);
+    }
+    // un spot au-dessus de la table basse, avec ombres portées sur le tapis
+    spot(-2.4, LOUNGE.h - 0.05, 8.8, -2.7, 0, 8.4, { intensity: 22, angle: 0.75, beam: false, castShadow: !low, parent: lounge });
+    if (!low) spot(4.9, LOUNGE.h - 0.05, 8.3, 5.3, 1.1, 8.3, { intensity: 16, angle: 0.9, beam: false, color: '#FFB677', parent: lounge });
   }
   scene.add(lounge);
   const fireMesh = lounge.getObjectByName('fire');
@@ -933,7 +1037,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     const paverTex = canvasTexture(512, 512, (g, w, h) => {
       for (let i = 0; i < 4; i++) for (let j = 0; j < 4; j++) {
         const v = rnd(-7, 7);
-        g.fillStyle = `rgb(${206 + v},${191 + v},${163 + v})`;
+        g.fillStyle = `rgb(${176 + v},${154 + v},${126 + v})`;
         g.fillRect(i * w / 4, j * h / 4, w / 4, h / 4);
       }
       for (let i = 0; i < 3000; i++) { g.fillStyle = `rgba(120,100,70,${rnd(0.02, 0.08)})`; g.fillRect(Math.random() * w, Math.random() * h, 2, 2); }
@@ -958,14 +1062,15 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     terrace.add(slats);
     mesh(new THREE.BoxGeometry(18.8, 0.06, 0.12), std('#7A5236'), -5.6, 1.72, -40, terrace);
     // arbres
-    const trunkM = std('#5E4634', { roughness: 0.9 });
+    const trunkM = std('#3A2A1F', { roughness: 0.9 });
+    const duskLeaf = std('#6A7458', { map: leafTex, roughness: 0.95 });
     const tree = (x, z, s, conifer) => {
       const g = new THREE.Group();
       mesh(new THREE.CylinderGeometry(0.12, 0.18, 2.4, 10), trunkM, 0, 1.2, 0, g);
       if (conifer) {
-        [[1.9, 2.2, 3.1], [1.5, 2.0, 4.6], [1.0, 1.8, 6.0]].forEach(([r, h, y]) => mesh(new THREE.ConeGeometry(r, h, 18), leafM, 0, y, 0, g));
+        [[1.9, 2.2, 3.1], [1.5, 2.0, 4.6], [1.0, 1.8, 6.0]].forEach(([r, h, y]) => mesh(new THREE.ConeGeometry(r, h, 18), duskLeaf, 0, y, 0, g));
       } else {
-        [[0, 4.2, 0, 1.9], [1.0, 3.6, 0.4, 1.3], [-1.0, 3.7, -0.3, 1.4], [0.2, 5.2, -0.2, 1.3]].forEach(([dx, y, dz, r]) => mesh(new THREE.SphereGeometry(r, 28, 20), leafM, dx, y, dz, g));
+        [[0, 4.2, 0, 1.9], [1.0, 3.6, 0.4, 1.3], [-1.0, 3.7, -0.3, 1.4], [0.2, 5.2, -0.2, 1.3]].forEach(([dx, y, dz, r]) => mesh(new THREE.SphereGeometry(r, 28, 20), duskLeaf, dx, y, dz, g));
       }
       g.position.set(x, 0, z); g.scale.setScalar(s);
       terrace.add(shadow(g, true, false));
@@ -993,7 +1098,12 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     };
     const table = (x, z, n) => {
       const g = new THREE.Group();
-      mesh(rbox(0.82, 0.04, 0.82, 0.01), std('#55524E', { roughness: 0.4 }), 0, 0.74, 0, g);
+      mesh(rbox(0.82, 0.04, 0.82, 0.01), std('#2E2620', { roughness: 0.35 }), 0, 0.74, 0, g);
+      // photophore : verre ambré allumé
+      mesh(new THREE.CylinderGeometry(0.05, 0.05, 0.12, 20), new THREE.MeshStandardMaterial({ color: '#FFD3A0', emissive: '#FF9A4A', emissiveIntensity: 1.6, transparent: true, opacity: 0.9 }), -0.15, 0.82, -0.1, g);
+      const glow = new THREE.Sprite(new THREE.SpriteMaterial({ map: glowTex, color: '#FF9A4A', transparent: true, opacity: 0.6, blending: THREE.AdditiveBlending, depthWrite: false }));
+      glow.scale.set(0.7, 0.7, 1); glow.position.set(-0.15, 0.84, -0.1); g.add(glow);
+      lightPool(0, 0, 1.3, 1.3, '#FF9A4A', 0.18, 0.012, g);
       mesh(new THREE.CylinderGeometry(0.04, 0.04, 0.72, 10), legM, 0, 0.37, 0, g);
       mesh(new THREE.CylinderGeometry(0.25, 0.28, 0.03, 24), legM, 0, 0.015, 0, g);
       mesh(new THREE.CylinderGeometry(0.06, 0.05, 0.1, 16), std('#F1ECE3'), 0.1, 0.81, 0.05, g);
@@ -1007,6 +1117,27 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       }
     };
     [[-3.4, -25.8, 3], [1.4, -27.6, 4], [5.4, -25.0, 3], [-2.0, -31.8, 4], [3.6, -32.6, 3], [-7.0, -29.0, 3], [8.6, -30.0, 3]].forEach(([x, z, n]) => table(x, z, n));
+    // guirlande de lumières chaudes au-dessus des tables
+    const bulbGeo = new THREE.SphereGeometry(0.045, 12, 8);
+    const bulbM = new THREE.MeshBasicMaterial({ color: '#FFC27E' });
+    [[[-9, 3.2, -22.5], [9, 3.2, -24.5]], [[-9, 3.2, -30.5], [9, 3.2, -33.5]]].forEach(([a, b]) => {
+      [a, b].forEach(([x, y, z]) => mesh(new THREE.CylinderGeometry(0.05, 0.06, y, 10), bronze, x, y / 2, z, terrace));
+      const c = new THREE.QuadraticBezierCurve3(v3(...a), v3((a[0] + b[0]) / 2, 2.4, (a[2] + b[2]) / 2), v3(...b));
+      terrace.add(new THREE.Mesh(new THREE.TubeGeometry(c, 40, 0.006, 4), std('#1A1410')));
+      const n = 22;
+      const inst = new THREE.InstancedMesh(bulbGeo, bulbM, n);
+      const glowPts = new Float32Array(n * 3);
+      for (let i = 0; i < n; i++) {
+        const q = c.getPoint((i + 0.5) / n);
+        dummy.position.set(q.x, q.y - 0.08, q.z); dummy.rotation.set(0, 0, 0); dummy.updateMatrix();
+        inst.setMatrixAt(i, dummy.matrix);
+        glowPts.set([q.x, q.y - 0.08, q.z], i * 3);
+      }
+      terrace.add(inst);
+      const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(glowPts, 3));
+      terrace.add(new THREE.Points(pg, new THREE.PointsMaterial({ map: glowTex, color: '#FFAA5C', size: 0.55, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })));
+    });
+
     // jardinières basses le long de la terrasse
     [[-12.5, -23], [12.5, -23], [-12.5, -32], [12.5, -26]].forEach(([x, z]) => {
       mesh(rbox(1.6, 0.5, 0.6, 0.04), concrete, x, 0.25, z, terrace);
@@ -1028,7 +1159,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   });
   const rays = [];
   for (let i = 0; i < 16; i++) {
-    const r = mesh(new THREE.PlaneGeometry(rnd(0.25, 0.6), 1.5), new THREE.MeshBasicMaterial({ map: rayTex, color: '#C8FFF5', transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), rnd(-3.4, 1.0), POOL.water - 0.75, rnd(-8, -1.2), under);
+    const r = mesh(new THREE.PlaneGeometry(rnd(0.25, 0.6), 1.5), new THREE.MeshBasicMaterial({ map: rayTex, color: '#B9C4FF', transparent: true, opacity: 0.12, blending: THREE.AdditiveBlending, depthWrite: false, side: THREE.DoubleSide }), rnd(-3.4, 1.0), POOL.water - 0.75, rnd(-8, -1.2), under);
     r.rotation.set(0, rnd(0, Math.PI), rnd(-0.25, 0.25));
     r.userData.phase = Math.random() * 6;
     r.renderOrder = 9;
@@ -1049,7 +1180,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   under.add(bubbles);
   scene.add(under);
   // le brouillard existe toujours (pas de recompilation des shaders) : densité nulle hors de l'eau
-  const uwFog = new THREE.FogExp2('#0F5660', 0);
+  const uwFog = new THREE.FogExp2('#0C1460', 0);
   scene.fog = uwFog;
 
   /* ---------- le dauphin de verre ---------- */
@@ -1057,7 +1188,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const glass = new THREE.MeshPhysicalMaterial({
     color: '#FFFFFF', metalness: 0, roughness: 0.03,
     transmission: 1, thickness: 0.55, ior: 1.5, dispersion: 2,
-    attenuationColor: new THREE.Color('#8FA6FF'), attenuationDistance: 1.1,
+    attenuationColor: new THREE.Color('#6E7BFF'), attenuationDistance: 0.9,
     clearcoat: 1, clearcoatRoughness: 0.03,
     iridescence: 0.45, iridescenceIOR: 1.3,
     specularIntensity: 1, envMapIntensity: 1.8,

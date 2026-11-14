@@ -68,6 +68,9 @@ export function start(ctx) {
   renderer.setPixelRatio(Math.min(devicePixelRatio || 1, mob ? 1.5 : 1.75));
   renderer.shadowMap.enabled = true;
   renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  // décor immobile : les ombres sont calculées une fois (puis rafraîchies rarement), pas à chaque image
+  renderer.shadowMap.autoUpdate = false;
+  let shadowFrames = 3;
   renderer.toneMapping = THREE.NeutralToneMapping;
   renderer.toneMappingExposure = 1.0;
 
@@ -757,6 +760,7 @@ export function start(ctx) {
       const s = damp(c.root.scale.x, target, 10, dt);
       c.root.scale.setScalar(s);
     });
+    if (shadowFrames > 0) { renderer.shadowMap.needsUpdate = true; shadowFrames--; }
     renderer.render(scene, camera);
     updatePins();
   }
@@ -778,6 +782,7 @@ export function start(ctx) {
   camera.position.copy(P); camera.lookAt(L);
 
   world.ready.then(() => {
+    shadowFrames = 3;
     loaderBar.style.width = '70%';
     return renderer.compileAsync ? renderer.compileAsync(scene, camera) : null;
   }).catch(() => null).then(() => {
