@@ -422,6 +422,11 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .pcols.is-swap .pcol { animation: fadeUp 0.45s var(--ease) both; }
 .pcols.is-swap .pcol:nth-child(2) { animation-delay: 0.05s; }
 .pcols.is-swap .pcol:nth-child(3) { animation-delay: 0.1s; }
+.home-note { display: flex; gap: 12px; align-items: flex-start; margin-top: 24px; padding: 14px 16px; border-radius: 16px; background: rgba(8, 10, 70, 0.24); text-align: left; }
+.home-icon { width: 32px; height: 32px; flex: none; display: grid; place-items: center; border-radius: 50%; background: #fff; color: var(--majorelle-deep); }
+.home-icon svg { width: 17px; height: 17px; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
+.home-note h3 { font-size: 15px; color: #fff; }
+.home-note p { margin-top: 2px; font-size: 14px; line-height: 1.4; color: rgba(255, 255, 255, 0.85); }
 .fine { margin-top: 24px; font-size: 13px; line-height: 1.45; color: rgba(255, 255, 255, 0.72); text-align: center; }
 
 /* avis */
@@ -462,9 +467,10 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .chips button:hover { background: var(--tile-hover); }
 .chips button[aria-pressed="true"] { background: var(--majorelle); color: #fff; }
 .chips button:disabled { opacity: 0.35; cursor: not-allowed; }
+.chips-hint { margin-top: 8px; font-size: 13px; color: var(--text-2); }
 .book-sum { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 16px; background: var(--tile); }
 .book-sum span { font-size: 15px; color: var(--text-2); }
-.book-sum strong { font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
+.book-sum strong { flex: none; white-space: nowrap; font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label { font-size: 13px; font-weight: 600; color: var(--text-2); }
 .field input {

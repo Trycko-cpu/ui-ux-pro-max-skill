@@ -8,7 +8,7 @@
   <meta name="theme-color" content="#1A120D">
   <meta property="og:type" content="website">
   <meta property="og:title" content="MyLizaSwim · Se sentir libre dans l'eau">
-  <meta property="og:description" content="Cours de natation particuliers à Bruxelles, seul, à deux ou à trois, avec un suivi à votre rythme.">
+  <meta property="og:description" content="Cours de natation particuliers à Bruxelles, à la piscine ou chez vous, seul, à deux ou à trois.">
   <meta property="og:locale" content="fr_FR">
   <link rel="icon" href="assets/img/logo-mark.svg" type="image/svg+xml">
   <link rel="preload" href="assets/fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -202,6 +202,13 @@
             <div class="pcol"><span class="pdots" aria-hidden="true"><i></i><i></i></span><h3>Duo</h3><p class="pwho">2 personnes</p><p class="pbig">80<small>€</small></p><p class="punit">l'heure</p><dl><div><dt>10 leçons</dt><dd>720 €</dd></div><div><dt>Acompte</dt><dd>20 €</dd></div></dl></div>
             <div class="pcol"><span class="pdots" aria-hidden="true"><i></i><i></i><i></i></span><h3>Trio</h3><p class="pwho">3 personnes</p><p class="pbig">100<small>€</small></p><p class="punit">l'heure</p><dl><div><dt>10 leçons</dt><dd>900 €</dd></div><div><dt>Acompte</dt><dd>50 %</dd></div></dl></div>
           </div>
+          <div class="home-note">
+            <span class="home-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg></span>
+            <div>
+              <h3>Cours chez vous</h3>
+              <p>Si vous avez une piscine, je viens chez vous. Mêmes prix que le cours d'une heure, forfait compris. L'acompte est de 50 %, en duo aussi.</p>
+            </div>
+          </div>
           <p class="fine" id="priceNote">L'acompte se règle à la réservation. Le forfait de 10 leçons se prend sur un mois.</p>
           <a class="btn btn-light" href="#reserver" data-go="reserver" data-open>Réserver un cours</a>
         </section>
@@ -244,7 +251,7 @@
             </details>
             <details>
               <summary>Où ont lieu les cours ?</summary>
-              <p>À Bruxelles, en piscine.</p>
+              <p>À Bruxelles, en piscine. Si vous avez une piscine, je peux aussi venir chez vous, pour des cours d'une heure.</p>
             </details>
             <details>
               <summary>Combien de cours faut-il pour savoir nager ?</summary>
@@ -268,6 +275,13 @@
           <p class="lead">Je vous recontacte ensuite pour fixer le jour et l'heure.</p>
           <form class="book" id="bookForm" novalidate>
             <fieldset>
+              <legend>Où ?</legend>
+              <div class="chips" data-name="p">
+                <button type="button" data-v="0" aria-pressed="true">À la piscine</button>
+                <button type="button" data-v="1" aria-pressed="false">Chez vous</button>
+              </div>
+            </fieldset>
+            <fieldset>
               <legend>Pour combien de personnes ?</legend>
               <div class="chips" data-name="n">
                 <button type="button" data-v="1" aria-pressed="true">1</button>
@@ -281,6 +295,7 @@
                 <button type="button" data-v="30" aria-pressed="false">30 minutes</button>
                 <button type="button" data-v="60" aria-pressed="true">1 heure</button>
               </div>
+              <p class="chips-hint" id="homeHint" hidden>Chez vous, les cours durent une heure.</p>
             </fieldset>
             <fieldset>
               <legend>Quelle formule ?</legend>
@@ -289,7 +304,7 @@
                 <button type="button" data-v="10" aria-pressed="false">10 leçons</button>
               </div>
             </fieldset>
-            <div class="book-sum" aria-live="polite"><span id="bookWhat">Solo, un cours d'une heure</span><strong id="bookPrice">60 €</strong></div>
+            <div class="book-sum" aria-live="polite"><span id="bookWhat">Solo, un cours d'une heure, à la piscine</span><strong id="bookPrice">60 €</strong></div>
             <div class="field">
               <label for="f-name">Votre prénom</label>
               <input id="f-name" name="name" autocomplete="given-name" required>

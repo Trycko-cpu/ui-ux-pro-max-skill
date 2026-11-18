@@ -1,6 +1,6 @@
 # MyLizaSwim : le bassin
 
-Site vitrine immersif pour MyLizaSwim : Maliza Grace-Emmy (« Emmy »), maître-nageuse à Bruxelles. Cours particuliers pour bébés nageurs, enfants, ados et adultes, seul, à deux ou à trois.
+Site vitrine immersif pour MyLizaSwim : Maliza Grace-Emmy (« Emmy »), maître-nageuse à Bruxelles. Cours particuliers pour bébés nageurs, enfants, ados et adultes, seul, à deux ou à trois, à la piscine ou chez vous.
 
 ## Le concept
 
@@ -17,7 +17,7 @@ Une visite en trois lieux, guidée par un dauphin de verre. Ambiance tamisée : 
 | 3 | Piscine | chaise de maître-nageur | **Votre coach** (photo, chiffres clés) |
 | 4 | Piscine | 3 plots numérotés | **Pour qui ?** (1 couloir = 1 public) |
 | 5 | **Sous l'eau** | échelle, planche vue d'en dessous | **Le premier cours** |
-| 6 | Piscine | banc et piles de 1, 2, 3 serviettes | **Tarifs** (solo, duo, trio ; 30 minutes ou 1 heure) |
+| 6 | Piscine | banc et piles de 1, 2, 3 serviettes | **Tarifs** (solo, duo, trio ; 30 minutes ou 1 heure ; encart « chez vous ») |
 | 7 | Piscine | écran à gauche de la sortie | **Avis** |
 | 8 | Piscine | bouée à droite de la sortie | **FAQ** |
 | 9 | Terrasse | tables et fauteuils | **Réserver** (cours en trois choix, prix en direct) |
@@ -54,7 +54,7 @@ Les textes, tarifs, avis, FAQ et la photo d'Emmy viennent de l'ancienne version 
 
 - [ ] **Brancher le formulaire** : `assets/js/app.js` → `CONFIG.formEndpoint` (Formspree, Basin…). Sans ça, il affiche « Démo : le formulaire n'est pas encore relié » et n'envoie rien. Si l'envoi échoue, la demande reste à l'écran avec un message d'erreur.
 - [ ] **Numéro WhatsApp** d'Emmy : `CONFIG.whatsapp` (affiche le lien « Ou écrire directement sur WhatsApp » avec la demande déjà rédigée).
-- [ ] **Confirmer les tarifs** (`PRICES`, `DEPOSIT`) : forfait trio 10 × 30 min à 496 € (495 € suivrait la règle des -10 % des autres forfaits) ; acompte lu comme « 50 % du prix, 20 € en duo » ; fin des cours à domicile ?
+- [ ] **Confirmer les tarifs** (`PRICES`, `DEPOSIT`) : forfait trio 10 × 30 min à 496 € (495 € suivrait la règle des -10 % des autres forfaits) ; acompte lu comme « 50 % du prix, sauf duo à la piscine : 20 € » ; cours chez vous = mêmes prix que l'heure, 1 h uniquement, chez les clients qui ont une piscine
 - [ ] **Confirmer que les avis sont réels** et que les familles sont d'accord pour être citées.
 - [ ] Mentions légales + politique de confidentialité.
 - [ ] Logo vectoriel d'origine (l'actuel a été vectorisé depuis une image).

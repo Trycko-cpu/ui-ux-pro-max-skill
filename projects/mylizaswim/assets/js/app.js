@@ -21,6 +21,7 @@ const PRICES = {
   2: { 30: { 1: 45, 10: 405 }, 60: { 1: 80, 10: 720 } },
   3: { 30: { 1: 55, 10: 496 }, 60: { 1: 100, 10: 900 } }, // 496 € : chiffre d'Emmy, à confirmer (495 € suivrait la règle des -10 %)
 };
+// acompte à la piscine ; chez vous, c'est 50 % pour tout le monde (mêmes prix que le cours d'une heure)
 const DEPOSIT = { 1: '50 %', 2: '20 €', 3: '50 %' };
 const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
 const DUR = { 30: 'de 30 minutes', 60: 'd\'une heure' };
@@ -140,22 +141,28 @@ $('#tarifs .toggle').addEventListener('click', (e) => {
   if (!b) return;
   dur = Number(b.dataset.dur);
   renderPrices();
-  setBooking({ d: dur });
+  setBooking(dur === 30 ? { d: 30, p: 0 } : { d: dur }); // 30 min : seulement à la piscine
 });
 renderPrices(false);
 
 // --- réservation en trois choix, prix en direct
-const booking = { n: 1, d: 60, k: 1 };
+const booking = { p: 0, n: 1, d: 60, k: 1 }; // p : 0 = piscine, 1 = chez vous
 const waLink = $('#waLink');
 function bookingSummary() {
-  const what = `${GROUP[booking.n]}, ${booking.k === 10 ? '10 leçons' : 'un cours'} ${DUR[booking.d]}`;
+  const what = `${GROUP[booking.n]}, ${booking.k === 10 ? '10 leçons' : 'un cours'} ${DUR[booking.d]}, ${booking.p ? 'chez vous' : 'à la piscine'}`;
   return { what, price: PRICES[booking.n][booking.d][booking.k] };
 }
 function setBooking(patch = {}) {
   Object.assign(booking, patch);
+  if (booking.p === 1) booking.d = 60; // chez vous : cours d'une heure uniquement
   $$('#bookForm .chips').forEach((group) => {
-    $$('button', group).forEach((b) => b.setAttribute('aria-pressed', String(booking[group.dataset.name] === Number(b.dataset.v))));
+    $$('button', group).forEach((b) => {
+      const v = Number(b.dataset.v);
+      b.setAttribute('aria-pressed', String(booking[group.dataset.name] === v));
+      if (group.dataset.name === 'd') b.disabled = booking.p === 1 && v === 30;
+    });
   });
+  $('#homeHint').hidden = booking.p !== 1;
   const { what, price } = bookingSummary();
   $('#bookWhat').textContent = what;
   $('#bookPrice').textContent = fmt(price);
