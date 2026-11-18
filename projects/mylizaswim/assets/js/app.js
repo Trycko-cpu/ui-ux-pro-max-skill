@@ -24,6 +24,7 @@ const PRICES = {
 const DEPOSIT = { 1: '50 %', 2: '20 €', 3: '50 %' };
 const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
 const DUR = { 30: 'de 30 minutes', 60: 'd\'une heure' };
+const UNIT = { 30: 'les 30 min', 60: 'l\'heure' };
 
 /* ------------------------------------------------------------------
    Les étapes. cam / look = position et cible de la caméra,
@@ -128,7 +129,7 @@ function renderPrices(animate = true) {
   cols.innerHTML = [1, 2, 3].map((n) => {
     const p = PRICES[n][dur];
     return `<div class="pcol"><span class="pdots" aria-hidden="true">${'<i></i>'.repeat(n)}</span><h3>${GROUP[n]}</h3>
-      <p class="pwho">${n} personne${n > 1 ? 's' : ''}</p><p class="pbig">${p[1]}<small>€</small></p><p class="punit">le cours ${DUR[dur]}</p>
+      <p class="pwho">${n} personne${n > 1 ? 's' : ''}</p><p class="pbig">${p[1]}<small>€</small></p><p class="punit">${UNIT[dur]}</p>
       <dl><div><dt>10 leçons</dt><dd>${fmt(p[10])}</dd></div><div><dt>Acompte</dt><dd>${DEPOSIT[n]}</dd></div></dl></div>`;
   }).join('');
   $$('#tarifs .toggle button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.dur) === dur)));

@@ -25,7 +25,7 @@ Une visite en trois lieux, guidée par un dauphin de verre. Ambiance tamisée : 
 - **Pas besoin de défiler** : objets cliquables, pastilles, menu, progression à droite (barre d'étapes sur mobile).
 - **Au défilement**, la caméra glisse sur un rail continu, une étape par geste, plonge sous la surface à l'étape 5, ressort, puis sort sur la terrasse.
 - **Les textes** : Emmy parle à la première personne dans les fiches ; le dauphin dit simplement ce qu'on trouve à chaque étape. Phrases courtes, sans slogan ni jargon, et chaque bouton dit ce qu'il fait (« Voir les tarifs », « Envoyer ma demande »). « Aquababy » est devenu « Bébés nageurs », plus clair pour les parents.
-- **Une fiche = une idée** : un titre court, une phrase, puis l'essentiel en tuiles. La fiche s'adapte à la hauteur de son contenu ; la fiche Tarifs passe en bleu Majorelle.
+- **Une fiche = une idée** : un titre court, une phrase, puis l'essentiel en tuiles. La fiche s'adapte à la hauteur de son contenu. Les fiches alternent bleu Majorelle et terre cuite (méthode bleue, coach orange, pour qui bleue…).
 - **Le dauphin** nage avec une ondulation calculée dans le shader : il plonge entre deux étapes, saute à l'arrivée, tourne autour de la caméra sous l'eau. Cliquez dessus : il fait une vrille.
 
 ## Lancer en local
@@ -77,7 +77,7 @@ Les positions caméra de chaque étape sont dans `STATIONS` (`app.js`), avec une
 ## Choix de design
 
 - **Typographie** : la police système d'Apple (SF Pro) sur Mac, iPhone et iPad, Inter ailleurs. Titres courts, graisse 600, interlettrage serré ; pas d'italique décoratif, pas de capitales espacées.
-- **Couleurs** : bleu Majorelle `#2F39DA`, orange `#D4713D`, brun expresso pour le verre de l'interface. L'orange marque n'atteint pas le contraste AA avec du texte blanc (3,4:1), donc les boutons utilisent `#BC5A28` (4,6:1).
+- **Couleurs** : bleu Majorelle `#2F39DA`, orange `#D4713D`, brun expresso pour le verre de l'interface. L'orange marque n'atteint pas le contraste AA avec du texte blanc (3,4:1), donc les boutons utilisent `#BC5A28` (4,6:1). Pour la même raison, les fiches orange partent d'un orange terre cuite (`#B5541F` → `#8C3B15`) : le texte blanc y reste lisible en AA.
 - **Fiches** : papier blanc, gris neutres façon Apple (`#1D1D1F`, `#6E6E73`, tuiles `#F5F5F7`).
 - **Repères** : numéro et titre de l'étape dans la carte du guide, bouton explicite par étape, un geste de défilement = une étape au plus.
 - **Garde-fous** : qualité adaptative si l'appareil rame, proposition (une seule fois) de la version sans 3D, bascule automatique si la 3D plante.

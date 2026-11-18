@@ -40,6 +40,10 @@
   --hair: rgba(0, 0, 0, 0.1);
   --tile: #F5F5F7;
   --paper: #FFFFFF;
+  --accent: var(--orange-ink);
+  --link: var(--majorelle);
+  --tile-hover: #EAEAEC;
+  --c: var(--majorelle);
 
   /* verre de la scène */
   --glass: rgba(30, 21, 15, 0.6);
@@ -85,7 +89,7 @@ button { font: inherit; color: inherit; letter-spacing: inherit; }
 }
 .skip-link:focus { top: 12px; }
 
-.eyebrow { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--orange-ink); margin-bottom: 6px; }
+.eyebrow { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; color: var(--accent); margin-bottom: 6px; }
 
 /* ---------- boutons et liens ---------- */
 .btn {
@@ -100,14 +104,14 @@ button { font: inherit; color: inherit; letter-spacing: inherit; }
 .btn-cta:hover { background: var(--orange-btn-hover); }
 .btn-primary { background: var(--majorelle); color: #fff; }
 .btn-primary:hover { background: var(--majorelle-hover); }
-.btn-light { background: #fff; color: var(--ink); }
+.btn-light { background: #fff; color: #1D1D1F; }
 .btn-light:hover { background: #F2F2F4; }
 .btn-glass { background: rgba(255, 255, 255, 0.12); color: #fff; }
 .btn-glass:hover { background: rgba(255, 255, 255, 0.2); }
 
 .link {
   display: inline-flex; align-items: center; gap: 2px; padding: 0; border: 0; background: none; cursor: pointer;
-  font-size: 17px; font-weight: 400; color: var(--majorelle); text-decoration: none;
+  font-size: 17px; font-weight: 400; color: var(--link); text-decoration: none;
 }
 .link::after { content: "›"; font-size: 1.25em; line-height: 1; margin-left: 4px; transform: translateY(-1px); }
 .link:hover { text-decoration: underline; text-underline-offset: 3px; }
@@ -292,7 +296,7 @@ html.js:not(.classic) .sheet.is-open { transform: none; visibility: visible; tra
 .sheet-foot { display: flex; justify-content: space-between; gap: 12px; padding: 12px 20px 16px; border-top: 1px solid var(--hair); }
 .sheet-nav {
   display: inline-flex; align-items: center; gap: 4px; min-height: 36px; padding: 0 4px; border: 0; background: none; cursor: pointer;
-  font-size: 15px; color: var(--majorelle); max-width: 48%;
+  font-size: 15px; color: var(--link); max-width: 48%;
 }
 .sheet-nav span { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sheet-nav svg { width: 16px; height: 16px; flex: none; fill: none; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; }
@@ -300,11 +304,50 @@ html.js:not(.classic) .sheet.is-open { transform: none; visibility: visible; tra
 .sheet-nav[hidden] { display: inline-flex !important; visibility: hidden; }
 .sheet-nav-next { margin-left: auto; }
 
-/* fiche bleue (tarifs) */
-html.js:not(.classic) .sheet.is-blue { background: linear-gradient(160deg, #3843E6, var(--majorelle) 45%, var(--majorelle-deep)); color: #fff; }
-.sheet.is-blue .sheet-close { background: rgba(255, 255, 255, 0.16); color: #fff; }
-.sheet.is-blue .sheet-foot { border-top-color: rgba(255, 255, 255, 0.18); }
-.sheet.is-blue .sheet-nav { color: #fff; }
+/* fiches de couleur, en alternance : bleu Majorelle, puis terre cuite.
+   L'orange du logo (#D4713D) ne tient pas le texte blanc (3,4:1) : la fiche
+   orange part d'un orange plus profond, lisible en AA. */
+html.js:not(.classic) .sheet.is-blue, html.classic .panel-blue, html.no-js .panel-blue {
+  background: linear-gradient(160deg, #3843E6, var(--majorelle) 45%, var(--majorelle-deep));
+}
+html.js:not(.classic) .sheet.is-orange, html.classic .panel-orange, html.no-js .panel-orange {
+  background: linear-gradient(160deg, #B5541F, #A94B1B 45%, #8C3B15);
+}
+.sheet.is-blue, .sheet.is-orange, .panel-blue, .panel-orange {
+  --ink: #fff;
+  --text-2: rgba(255, 255, 255, 0.82);
+  --text-3: rgba(255, 255, 255, 0.74);
+  --hair: rgba(255, 255, 255, 0.2);
+  --tile: rgba(8, 10, 70, 0.24);
+  --tile-hover: rgba(8, 10, 70, 0.34);
+  --accent: var(--peach);
+  --link: #fff;
+  --c: var(--majorelle-deep);
+  color: var(--ink);
+}
+.sheet.is-orange, .panel-orange {
+  --text-2: rgba(255, 255, 255, 0.92);
+  --text-3: rgba(255, 255, 255, 0.88);
+  --hair: rgba(255, 255, 255, 0.24);
+  --tile: rgba(70, 18, 0, 0.2);
+  --tile-hover: rgba(70, 18, 0, 0.3);
+  --accent: #FFF0E5;
+  --c: #A94B1B;
+}
+.sheet.is-blue .sheet-close, .sheet.is-orange .sheet-close { background: rgba(255, 255, 255, 0.16); color: #fff; }
+.sheet.is-blue .sheet-close:hover, .sheet.is-orange .sheet-close:hover { background: rgba(255, 255, 255, 0.26); }
+/* composants posés sur la couleur */
+:is(.panel-blue, .panel-orange) .btn-cta { background: #fff; color: #1D1D1F; }
+:is(.panel-blue, .panel-orange) .btn-cta:hover { background: #F2F2F4; }
+:is(.panel-blue, .panel-orange) .dot { box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.9); }
+:is(.panel-blue, .panel-orange) .lane-num { background: #fff; color: var(--c); }
+:is(.panel-blue, .panel-orange) .lane-card.is-picked { background: var(--tile-hover); box-shadow: 0 0 0 2px #fff; }
+:is(.panel-blue, .panel-orange) .chips button[aria-pressed="true"] { background: #fff; color: var(--c); }
+:is(.panel-blue, .panel-orange) .field input { border-color: transparent; }
+:is(.panel-blue, .panel-orange) .field input:focus { border-color: #fff; box-shadow: 0 0 0 4px rgba(255, 255, 255, 0.3); }
+:is(.panel-blue, .panel-orange) .field input[aria-invalid="true"] { border-color: #fff; box-shadow: 0 0 0 2px #fff; }
+:is(.panel-blue, .panel-orange) .field-error { color: #fff; font-weight: 600; }
+:is(.panel-blue, .panel-orange) .consent input { accent-color: #fff; }
 
 html.js:not(.classic) .panel { display: none; }
 html.js:not(.classic) .panel.is-active { display: block; }
@@ -354,11 +397,9 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .checklist strong { display: block; font-weight: 600; }
 .checklist span { display: block; font-size: 15px; color: var(--text-2); }
 .reassure { margin-top: 20px; font-weight: 600; }
-.reassure::before { content: "✓"; color: var(--orange-ink); margin-right: 8px; }
+.reassure::before { content: "✓"; color: var(--accent); margin-right: 8px; }
 
 /* tarifs */
-.panel-blue .eyebrow { color: var(--peach); }
-.panel-blue h2 { color: #fff; }
 .toggle { display: inline-flex; padding: 3px; margin: 6px 0 28px; border-radius: 980px; background: rgba(255, 255, 255, 0.16); }
 .toggle button { min-height: 34px; padding: 0 18px; border: 0; border-radius: 980px; background: none; color: #fff; font-size: 15px; font-weight: 500; cursor: pointer; transition: background-color 0.3s, color 0.3s; }
 .toggle button[aria-pressed="true"] { background: #fff; color: var(--majorelle-deep); box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15); }
@@ -404,7 +445,7 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .faq details:last-child { border-bottom: 1px solid var(--hair); }
 .faq summary { position: relative; list-style: none; cursor: pointer; padding: 16px 36px 16px 0; font-weight: 600; }
 .faq summary::-webkit-details-marker { display: none; }
-.faq summary::after { content: "+"; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); font-size: 26px; font-weight: 300; line-height: 1; color: var(--orange-ink); transition: transform 0.35s var(--ease); }
+.faq summary::after { content: "+"; position: absolute; right: 2px; top: 50%; transform: translateY(-50%); font-size: 26px; font-weight: 300; line-height: 1; color: var(--accent); transition: transform 0.35s var(--ease); }
 .faq details[open] summary::after { transform: translateY(-50%) rotate(45deg); }
 .faq details p { padding: 0 0 18px; font-size: 16px; color: var(--text-2); }
 
@@ -418,7 +459,7 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
   background: var(--tile); color: var(--ink); font-size: 15px; font-weight: 500;
   transition: background-color 0.2s, color 0.2s;
 }
-.chips button:hover { background: #EAEAEC; }
+.chips button:hover { background: var(--tile-hover); }
 .chips button[aria-pressed="true"] { background: var(--majorelle); color: #fff; }
 .chips button:disabled { opacity: 0.35; cursor: not-allowed; }
 .book-sum { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 16px; background: var(--tile); }
@@ -428,7 +469,7 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .field label { font-size: 13px; font-weight: 600; color: var(--text-2); }
 .field input {
   width: 100%; min-height: 48px; padding: 0 14px; border-radius: 12px; border: 1px solid #D2D2D7; background: #fff;
-  font: inherit; font-size: 17px; color: var(--ink); transition: border-color 0.2s, box-shadow 0.2s;
+  font: inherit; font-size: 17px; color: #1D1D1F; transition: border-color 0.2s, box-shadow 0.2s;
 }
 .field input:focus { outline: none; border-color: var(--majorelle); box-shadow: 0 0 0 4px rgba(47, 57, 218, 0.15); }
 .field input[aria-invalid="true"] { border-color: #D70015; }
@@ -505,7 +546,8 @@ html.underwater .underwater-fx { opacity: 1; }
 @keyframes sway { from { transform: translateX(-3%) skewX(-4deg); } to { transform: translateX(3%) skewX(4deg); } }
 
 /* focus lisible sur la scène sombre */
-.topbar :focus-visible, .pins :focus-visible, .rail :focus-visible, .mascot :focus-visible, .hero :focus-visible, .menu :focus-visible, .progress :focus-visible, .sheet.is-blue :focus-visible { outline-color: var(--peach); }
+.topbar :focus-visible, .pins :focus-visible, .rail :focus-visible, .mascot :focus-visible, .hero :focus-visible, .menu :focus-visible, .progress :focus-visible { outline-color: var(--peach); }
+:is(.panel-blue, .panel-orange, .sheet.is-blue, .sheet.is-orange) :focus-visible { outline-color: #fff; }
 
 /* ==================================================================
    MODE CLASSIQUE (sans 3D), aussi utilisé sans JS ou sans WebGL
@@ -521,8 +563,8 @@ html.classic .hero, html.no-js .hero {
   background: linear-gradient(160deg, #1A120D, #2A1C14 35%, #1F2A9E 75%, #D4713D);
 }
 html.classic .hero::before, html.no-js .hero::before { display: none; }
-html.classic .panel, html.no-js .panel { padding: 64px 0; border-top: 1px solid var(--hair); scroll-margin-top: var(--top-h); }
-html.classic .panel-blue, html.no-js .panel-blue { margin: 24px 0; padding: 48px clamp(20px, 5vw, 48px); border-radius: 28px; border: 0; background: linear-gradient(160deg, #3843E6, var(--majorelle) 45%, var(--majorelle-deep)); color: #fff; }
+html.classic .panel, html.no-js .panel { padding: 64px 0; border-top: 1px solid var(--hair); scroll-margin-top: calc(var(--top-h) + 16px); }
+html.classic :is(.panel-blue, .panel-orange), html.no-js :is(.panel-blue, .panel-orange) { margin: 24px 0; padding: 48px clamp(20px, 5vw, 48px); border-radius: 28px; border: 0; }
 html.classic .quotes, html.no-js .quotes { margin: 0; padding-inline: 0; }
 
 /* ==================================================================
@@ -577,7 +619,7 @@ html.draft [data-todo] { outline: 2px dashed var(--orange); outline-offset: 4px;
   }
   .sheet-bar { padding: 10px 10px 0; min-height: 26px; }
   .sheet-handle { display: block; position: absolute; left: 50%; top: 8px; width: 36px; height: 5px; margin-left: -18px; border-radius: 3px; background: rgba(0, 0, 0, 0.16); }
-  .sheet.is-blue .sheet-handle { background: rgba(255, 255, 255, 0.35); }
+  :is(.sheet.is-blue, .sheet.is-orange) .sheet-handle { background: rgba(255, 255, 255, 0.35); }
   .sheet-body { padding: 0 22px 22px; }
   .quotes { margin: 0 -22px; padding-inline: 22px; scroll-padding-inline: 22px; grid-auto-columns: 84%; }
   .panel h2 { font-size: 30px; }

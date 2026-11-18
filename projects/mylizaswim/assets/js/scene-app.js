@@ -254,6 +254,7 @@ export function start(ctx) {
     S.open = i;
     sheetBody.scrollTop = 0;
     sheet.classList.toggle('is-blue', panel.classList.contains('panel-blue'));
+    sheet.classList.toggle('is-orange', panel.classList.contains('panel-orange'));
     // la fiche épouse son contenu : on remesure pour recadrer la scène au-dessus / à côté
     requestAnimationFrame(() => { sheetW = sheet.offsetWidth; sheetH = sheet.offsetHeight; });
     const prev = $('#sheetPrev'), next = $('#sheetNext');
