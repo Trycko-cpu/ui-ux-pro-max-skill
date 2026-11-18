@@ -48,14 +48,13 @@ URL utiles :
 
 ## Contenus
 
-Les textes, tarifs, avis, FAQ et la photo d'Emmy viennent de l'ancienne version du site « Myliza Swim ». La photo a été recadrée pour retirer le sticker « bonjour! ».
+Les textes, tarifs, avis, FAQ et la photo d'Emmy viennent de l'ancienne version du site « Myliza Swim ». La photo de profil est celle fournie par Emmy en novembre 2026, recadrée en 4:3 (1200 × 900 px).
 
 ## À fournir avant la mise en ligne
 
 - [ ] **Brancher le formulaire** : `assets/js/app.js` → `CONFIG.formEndpoint` (Formspree, Basin…). Sans ça, il affiche « Démo : le formulaire n'est pas encore relié » et n'envoie rien. Si l'envoi échoue, la demande reste à l'écran avec un message d'erreur.
 - [ ] **Numéro WhatsApp** d'Emmy : `CONFIG.whatsapp` (affiche le lien « Ou écrire directement sur WhatsApp » avec la demande déjà rédigée).
 - [ ] **Confirmer les tarifs** (`PRICES`, `DEPOSIT`) : forfait trio 10 × 30 min à 496 € (495 € suivrait la règle des -10 % des autres forfaits) ; acompte lu comme « 50 % du prix, 20 € en duo » ; fin des cours à domicile ?
-- [ ] **Nouvelle photo de profil** d'Emmy (demandée, pas encore reçue).
 - [ ] **Confirmer que les avis sont réels** et que les familles sont d'accord pour être citées.
 - [ ] Mentions légales + politique de confidentialité.
 - [ ] Logo vectoriel d'origine (l'actuel a été vectorisé depuis une image).
