@@ -206,7 +206,7 @@
             <span class="home-icon"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M3.5 11 12 4l8.5 7"/><path d="M5.5 9.5V20h13V9.5"/><path d="M10 20v-5.5h4V20"/></svg></span>
             <div>
               <h3>Cours chez vous</h3>
-              <p>Si vous avez une piscine, je viens chez vous. Mêmes prix que le cours d'une heure, forfait compris. L'acompte est de 50 %, en duo aussi.</p>
+              <p>Si vous avez une piscine, je viens chez vous, aux mêmes prix que le cours d'une heure. Acompte de 50 %, en duo aussi. Hors Bruxelles, le déplacement est compté 10 € par kilomètre en voiture au-delà de la ville.</p>
             </div>
           </div>
           <p class="fine" id="priceNote">L'acompte se règle à la réservation. Le forfait de 10 leçons se prend sur un mois.</p>
@@ -251,7 +251,7 @@
             </details>
             <details>
               <summary>Où ont lieu les cours ?</summary>
-              <p>À Bruxelles, en piscine. Si vous avez une piscine, je peux aussi venir chez vous, pour des cours d'une heure.</p>
+              <p>À Bruxelles, en piscine. Si vous avez une piscine, je peux aussi venir chez vous, pour des cours d'une heure. Hors Bruxelles, le déplacement est compté 10 € par kilomètre au-delà de la ville.</p>
             </details>
             <details>
               <summary>Combien de cours faut-il pour savoir nager ?</summary>
@@ -280,6 +280,7 @@
                 <button type="button" data-v="0" aria-pressed="true">À la piscine</button>
                 <button type="button" data-v="1" aria-pressed="false">Chez vous</button>
               </div>
+              <p class="chips-hint" id="homeHint" hidden>Chez vous, les cours durent une heure. Hors Bruxelles, comptez 10 € par kilomètre au-delà de la ville.</p>
             </fieldset>
             <fieldset>
               <legend>Pour combien de personnes ?</legend>
@@ -295,7 +296,6 @@
                 <button type="button" data-v="30" aria-pressed="false">30 minutes</button>
                 <button type="button" data-v="60" aria-pressed="true">1 heure</button>
               </div>
-              <p class="chips-hint" id="homeHint" hidden>Chez vous, les cours durent une heure.</p>
             </fieldset>
             <fieldset>
               <legend>Quelle formule ?</legend>
@@ -305,6 +305,11 @@
               </div>
             </fieldset>
             <div class="book-sum" aria-live="polite"><span id="bookWhat">Solo, un cours d'une heure, à la piscine</span><strong id="bookPrice">60 €</strong></div>
+            <div class="field" id="communeField" hidden>
+              <label for="f-commune">Votre commune</label>
+              <input id="f-commune" name="commune" autocomplete="address-level2" placeholder="Par exemple : Uccle, Waterloo">
+              <p class="field-error" id="e-commune" hidden>Indiquez votre commune pour que je calcule le déplacement.</p>
+            </div>
             <div class="field">
               <label for="f-name">Votre prénom</label>
               <input id="f-name" name="name" autocomplete="given-name" required>

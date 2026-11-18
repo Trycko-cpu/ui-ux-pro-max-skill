@@ -163,12 +163,14 @@ function setBooking(patch = {}) {
     });
   });
   $('#homeHint').hidden = booking.p !== 1;
+  $('#communeField').hidden = booking.p !== 1;
   const { what, price } = bookingSummary();
   $('#bookWhat').textContent = what;
   $('#bookPrice').textContent = fmt(price);
   if (CONFIG.whatsapp) {
     const who = $('#f-name').value.trim();
-    const text = `Bonjour Emmy${who ? `, c'est ${who}` : ''}. J'aimerais réserver : ${what.toLowerCase()} (${fmt(price)}). Quand seriez-vous disponible ?`;
+    const commune = booking.p === 1 ? $('#f-commune').value.trim() : '';
+    const text = `Bonjour Emmy${who ? `, c'est ${who}` : ''}. J'aimerais réserver : ${what.toLowerCase()}${commune ? ` à ${commune}` : ''} (${fmt(price)}). Quand seriez-vous disponible ?`;
     waLink.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
     waLink.hidden = false;
   }
@@ -179,6 +181,7 @@ $('#bookForm').addEventListener('click', (e) => {
   setBooking({ [b.closest('.chips').dataset.name]: Number(b.dataset.v) });
 });
 $('#f-name').addEventListener('change', () => setBooking());
+$('#f-commune').addEventListener('change', () => setBooking());
 setBooking();
 
 // --- envoi de la demande
@@ -186,6 +189,7 @@ const form = $('#bookForm');
 form.addEventListener('submit', async (e) => {
   e.preventDefault();
   const checks = [
+    ['#f-commune', '#e-commune', (v) => booking.p !== 1 || v.trim().length >= 2],
     ['#f-name', '#e-name', (v) => v.trim().length >= 2],
     ['#f-contact', '#e-contact', (v) => /^\S+@\S+\.\S+$/.test(v.trim()) || v.replace(/\D/g, '').length >= 9],
     ['#f-ok', '#e-ok', (_, el) => el.checked],
@@ -202,6 +206,7 @@ form.addEventListener('submit', async (e) => {
   if (firstBad) { firstBad.focus(); return; }
   const { what, price } = bookingSummary();
   const data = { ...Object.fromEntries(new FormData(form)), cours: what, prix: fmt(price) };
+  if (booking.p !== 1) delete data.commune;
   const first = data.name.trim().split(/\s+/)[0];
   let sent = false;
   if (CONFIG.formEndpoint) {
@@ -222,12 +227,12 @@ form.addEventListener('submit', async (e) => {
   form.hidden = true;
   const done = $('#formDone');
   done.hidden = false;
-  $('#formDoneText').textContent = `Merci ${first}, j'ai bien reçu votre demande (${what.toLowerCase()}). Je vous recontacte très vite pour fixer le jour et l'heure.`
+  $('#formDoneText').textContent = `Merci ${first}, j'ai bien reçu votre demande (${what.toLowerCase()}${data.commune ? ` à ${data.commune.trim()}` : ''}). Je vous recontacte très vite pour fixer le jour et l'heure.`
     + (CONFIG.formEndpoint ? '' : ' Démo : le formulaire n\'est pas encore relié, rien n\'a été envoyé.');
   done.focus();
   Sound.splash?.();
 });
-['#f-name', '#f-contact', '#f-ok'].forEach((s) => $(s).addEventListener('input', (e) => {
+['#f-commune', '#f-name', '#f-contact', '#f-ok'].forEach((s) => $(s).addEventListener('input', (e) => {
   if (e.target.getAttribute('aria-invalid') === 'true') { e.target.setAttribute('aria-invalid', 'false'); $(`#e-${s.slice(3)}`).hidden = true; }
 }));
 
