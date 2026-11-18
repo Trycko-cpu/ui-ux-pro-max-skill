@@ -15,16 +15,15 @@ const CONFIG = {
 };
 
 // Grille d'Emmy (reprise de l'ancien site). null = formule non proposée.
+// PRICES[personnes][durée] = { 1: un cours, 10: forfait de 10 leçons }
 const PRICES = {
-  piscine: { 1: { 30: 17, 60: 35, 10: 200 }, 2: { 30: 20, 60: 60, 10: 300 }, 3: { 30: 40, 60: 80, 10: 390 } },
-  domicile: { 1: { 30: null, 60: 45, 10: 425 }, 2: { 30: null, 60: 70, 10: 660 }, 3: { 30: null, 60: 96, 10: 900 } },
+  1: { 30: { 1: 35, 10: 315 }, 60: { 1: 60, 10: 540 } },
+  2: { 30: { 1: 45, 10: 405 }, 60: { 1: 80, 10: 720 } },
+  3: { 30: { 1: 55, 10: 496 }, 60: { 1: 100, 10: 900 } }, // 496 € : chiffre d'Emmy, à confirmer (495 € suivrait la règle des -10 %)
 };
-const PRICE_NOTES = {
-  piscine: 'Le forfait de 10 leçons se prend sur un mois. Les prix peuvent évoluer.',
-  domicile: 'Le forfait de 10 leçons se prend sur un mois. Hors Bruxelles, le déplacement est compté 15 € par km.',
-};
+const DEPOSIT = { 1: '50 %', 2: '20 €', 3: '50 %' };
 const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
-const FORMULA = { 30: '30 minutes', 60: '1 heure', 10: '10 leçons' };
+const DUR = { 30: 'de 30 minutes', 60: 'd\'une heure' };
 
 /* ------------------------------------------------------------------
    Les étapes. cam / look = position et cible de la caméra,
@@ -44,7 +43,7 @@ const STATIONS = [
     cam: [0, 1.75, 2.3], look: [0, 1.15, -14], camM: [0, 1.85, 0.2], lookM: [0, 0.95, -14],
     fov: 50, fovM: 72,
     dolphin: [0, -4.6],
-    line: 'Ces trois lumières sur l\'eau, ce sont les trois étapes de la méthode d\'Emmy.',
+    line: 'Ces trois lumières sont les trois étapes de la méthode MyLizaSwim. Cliquez pour en savoir plus.',
   },
   {
     id: 'coach', label: 'Votre coach', title: 'Votre coach', cta: 'Rencontrer Emmy',
@@ -122,55 +121,46 @@ function selectTab(key) {
   if (card) setTimeout(() => card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' }), 350);
 }
 
-// --- tarifs : au bassin / chez vous
-let place = 'piscine';
+// --- tarifs : bascule 30 minutes / 1 heure
+let dur = 60;
 function renderPrices(animate = true) {
-  const t = PRICES[place];
   const cols = $('#priceCols');
   cols.innerHTML = [1, 2, 3].map((n) => {
-    const half = t[n][30];
+    const p = PRICES[n][dur];
     return `<div class="pcol"><span class="pdots" aria-hidden="true">${'<i></i>'.repeat(n)}</span><h3>${GROUP[n]}</h3>
-      <p class="pwho">${n} personne${n > 1 ? 's' : ''}</p><p class="pbig">${t[n][60]}<small>€</small></p><p class="punit">l'heure</p>
-      <dl><div><dt>30 min</dt>${half == null ? '<dd class="off" aria-label="non proposé">—</dd>' : `<dd>${fmt(half)}</dd>`}</div>
-      <div><dt>10 leçons</dt><dd>${fmt(t[n][10])}</dd></div></dl></div>`;
+      <p class="pwho">${n} personne${n > 1 ? 's' : ''}</p><p class="pbig">${p[1]}<small>€</small></p><p class="punit">le cours ${DUR[dur]}</p>
+      <dl><div><dt>10 leçons</dt><dd>${fmt(p[10])}</dd></div><div><dt>Acompte</dt><dd>${DEPOSIT[n]}</dd></div></dl></div>`;
   }).join('');
-  $('#priceNote').textContent = PRICE_NOTES[place];
-  $$('#tarifs .toggle button').forEach((b) => b.setAttribute('aria-pressed', String(b.dataset.place === place)));
+  $$('#tarifs .toggle button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.dur) === dur)));
   if (animate) { cols.classList.remove('is-swap'); void cols.offsetWidth; cols.classList.add('is-swap'); }
 }
 $('#tarifs .toggle').addEventListener('click', (e) => {
-  const b = e.target.closest('[data-place]');
+  const b = e.target.closest('[data-dur]');
   if (!b) return;
-  place = b.dataset.place;
+  dur = Number(b.dataset.dur);
   renderPrices();
-  setBooking({ place });
+  setBooking({ d: dur });
 });
 renderPrices(false);
 
 // --- réservation en trois choix, prix en direct
-const booking = { place: 'piscine', n: 1, f: 60 };
+const booking = { n: 1, d: 60, k: 1 };
 const waLink = $('#waLink');
 function bookingSummary() {
-  const what = `${GROUP[booking.n]}, ${booking.place === 'piscine' ? 'à la piscine' : 'chez vous'}, ${FORMULA[booking.f]}`;
-  return { what, price: PRICES[booking.place][booking.n][booking.f] };
+  const what = `${GROUP[booking.n]}, ${booking.k === 10 ? '10 leçons' : 'un cours'} ${DUR[booking.d]}`;
+  return { what, price: PRICES[booking.n][booking.d][booking.k] };
 }
 function setBooking(patch = {}) {
   Object.assign(booking, patch);
-  if (PRICES[booking.place][booking.n][booking.f] == null) booking.f = 60;
   $$('#bookForm .chips').forEach((group) => {
-    const name = group.dataset.name;
-    $$('button', group).forEach((b) => {
-      const v = name === 'place' ? b.dataset.v : Number(b.dataset.v);
-      b.setAttribute('aria-pressed', String(booking[name] === v));
-      if (name === 'f') b.disabled = PRICES[booking.place][booking.n][v] == null;
-    });
+    $$('button', group).forEach((b) => b.setAttribute('aria-pressed', String(booking[group.dataset.name] === Number(b.dataset.v))));
   });
   const { what, price } = bookingSummary();
   $('#bookWhat').textContent = what;
   $('#bookPrice').textContent = fmt(price);
   if (CONFIG.whatsapp) {
     const who = $('#f-name').value.trim();
-    const text = `Bonjour Emmy${who ? `, c'est ${who}` : ''}. J'aimerais réserver un cours : ${what.toLowerCase()} (${fmt(price)}). Quand seriez-vous disponible ?`;
+    const text = `Bonjour Emmy${who ? `, c'est ${who}` : ''}. J'aimerais réserver : ${what.toLowerCase()} (${fmt(price)}). Quand seriez-vous disponible ?`;
     waLink.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
     waLink.hidden = false;
   }
@@ -178,8 +168,7 @@ function setBooking(patch = {}) {
 $('#bookForm').addEventListener('click', (e) => {
   const b = e.target.closest('.chips button');
   if (!b || b.disabled) return;
-  const name = b.closest('.chips').dataset.name;
-  setBooking({ [name]: name === 'place' ? b.dataset.v : Number(b.dataset.v) });
+  setBooking({ [b.closest('.chips').dataset.name]: Number(b.dataset.v) });
 });
 $('#f-name').addEventListener('change', () => setBooking());
 setBooking();
