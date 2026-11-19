@@ -113,6 +113,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const low = quality === 'low';
   const textures = []; // à redessiner une fois polices et logo chargés
   const floaters = []; // objets qui suivent le niveau de l'eau
+  const twinkles = []; // guirlandes de la terrasse
   const clickables = []; // { root, station, sub }
   const anchors = {}; // ancres des pastilles HTML
   const state = { level: POOL.water, fill: 1, time: 0, underwater: false };
@@ -791,8 +792,9 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     s.lineTo(0.22, 0.12); s.quadraticCurveTo(0.22, 0.34, 0, 0.36); s.quadraticCurveTo(-0.22, 0.34, -0.22, 0.12); s.lineTo(-0.22, -0.3);
     const g = new THREE.ExtrudeGeometry(s, { depth: 0.035, bevelEnabled: true, bevelThickness: 0.012, bevelSize: 0.02, bevelSegments: 3, curveSegments: 18 });
     g.rotateX(-Math.PI / 2);
-    kick.add(new THREE.Mesh(g, phys(COLORS.majorelle, { roughness: 0.6, clearcoat: 0.25 })));
-    const stripe = mesh(new THREE.PlaneGeometry(0.44, 0.02), std(COLORS.orange), 0, 0.06, 0.05, kick);
+    // mousse claire (une vraie planche de piscine) : vue d'en dessous, elle se détache en silhouette lumineuse
+    kick.add(new THREE.Mesh(g, phys('#F1EADF', { roughness: 0.7, clearcoat: 0.2, emissive: '#7F8CFF', emissiveIntensity: 0.16 })));
+    const stripe = mesh(new THREE.PlaneGeometry(0.44, 0.03), std(COLORS.majorelle), 0, 0.061, 0.05, kick);
     stripe.rotation.x = -Math.PI / 2;
   }
   kick.position.set(-2.55, POOL.water, -4.3);
@@ -827,6 +829,24 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
 
   /* ---------- 6 · écran du bassin (Avis), à gauche de la sortie ---------- */
   const board = new THREE.Group();
+  // les messages des parents, repris de la fiche Avis (une seule source de vérité : le HTML)
+  const quotes = [];
+  document.querySelectorAll('#avis .feature-quote, #avis .quotes figure').forEach((el) => {
+    const q = el.querySelector('p, blockquote'), who = el.querySelector('footer, figcaption');
+    if (q) quotes.push([q.textContent.replace(/[«»]/g, '').trim(), who ? who.textContent.trim() : '']);
+  });
+  if (!quotes.length) quotes.push(['Il a adoré et il n\'a plus peur à la plage !', 'Les parents d\'A.']);
+  let quoteIdx = 0;
+  const wrap = (g, text, maxW) => {
+    const words = text.split(' '), lines = [];
+    let line = '';
+    words.forEach((wd) => {
+      const t = line ? `${line} ${wd}` : wd;
+      if (g.measureText(t).width > maxW && line) { lines.push(line); line = wd; } else line = t;
+    });
+    if (line) lines.push(line);
+    return lines;
+  };
   const boardTex = canvasTexture(1536, 480, (g, w, h) => {
     g.fillStyle = '#0B1047'; g.fillRect(0, 0, w, h);
     g.fillStyle = 'rgba(255,255,255,0.035)';
@@ -836,23 +856,28 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       g.drawImage(logoImg, 40, 130, 220, 220);
     }
     g.textBaseline = 'middle';
-    g.fillStyle = '#ffffff'; g.font = `700 64px ${FONT}`;
-    g.fillText('MYLIZA SWIM', 300, 92);
+    // en-tête discret + heure
     g.fillStyle = COLORS.orange; g.font = `600 30px ${FONT}`;
-    g.fillText('COURS PARTICULIERS · BRUXELLES', 304, 150);
-    [['1', 'BÉBÉS NAGEURS', '3 MOIS – 1 AN'], ['2', 'ENFANTS', '1 – 9 ANS'], ['3', 'ADOS ET ADULTES', '9 ANS ET +']].forEach((r, i) => {
-      const y = 230 + i * 74;
-      g.fillStyle = COLORS.orange; g.font = `700 44px ${FONT}`; g.fillText(r[0], 304, y);
-      g.fillStyle = '#ffffff'; g.font = `600 40px ${FONT}`; g.fillText(r[1], 360, y);
-      g.fillStyle = 'rgba(255,255,255,0.6)'; g.font = `500 32px ${FONT}`; g.fillText(r[2], 820, y);
-    });
+    g.fillText('CE QUE LES PARENTS NOUS ÉCRIVENT', 312, 74);
     const d = new Date();
     g.textAlign = 'right';
-    g.fillStyle = '#FF9A5C'; g.font = `600 128px ${FONT}`;
-    g.fillText(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`, w - 70, 200);
-    g.fillStyle = 'rgba(255,255,255,0.7)'; g.font = `500 30px ${FONT}`;
-    g.fillText('MESSAGES DES PARENTS', w - 74, 320);
+    g.fillStyle = 'rgba(255,255,255,0.75)'; g.font = `600 44px ${FONT}`;
+    g.fillText(`${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`, w - 64, 74);
     g.textAlign = 'left';
+    // le message, en grand (taille ajustée pour tenir sur trois lignes)
+    const [text, who] = quotes[quoteIdx % quotes.length];
+    let size = 64, lines;
+    do { g.font = `600 ${size}px ${FONT}`; lines = wrap(g, `« ${text} »`, w - 312 - 70); size -= 4; } while (lines.length > 3 && size > 36);
+    const lh = (size + 4) * 1.18, y0 = 250 - ((lines.length - 1) * lh) / 2 - 10;
+    g.fillStyle = '#ffffff';
+    lines.forEach((l, i) => g.fillText(l, 312, y0 + i * lh));
+    g.fillStyle = '#FF9A5C'; g.font = `500 32px ${FONT}`;
+    g.fillText(who, 312, Math.min(y0 + lines.length * lh + 18, h - 44));
+    // points de pagination
+    quotes.forEach((_, i) => {
+      g.fillStyle = i === quoteIdx % quotes.length ? '#ffffff' : 'rgba(255,255,255,0.28)';
+      g.beginPath(); g.arc(w - 64 - (quotes.length - 1 - i) * 26, h - 44, 7, 0, Math.PI * 2); g.fill();
+    });
   });
   textures.push(boardTex);
   mesh(rbox(3.6, 1.22, 0.1, 0.03, 3), std('#12162E', { roughness: 0.45, metalness: 0.3 }), 0, 0, 0, board);
@@ -1313,6 +1338,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     // guirlande de lumières chaudes, accrochée en diagonale sous la pergola
     const bulbGeo = new THREE.SphereGeometry(0.045, 12, 8);
     const bulbM = new THREE.MeshBasicMaterial({ color: '#FFC27E' });
+    const white = new THREE.Color(1, 1, 1);
     [[[-7.5, 2.85, -22.4], [7.5, 2.85, -28.4]], [[-7.5, 2.85, -28.4], [7.5, 2.85, -34.4]], [[7.5, 2.85, -22.4], [-7.5, 2.85, -28.4]]].forEach(([a, b]) => {
       const c = new THREE.QuadraticBezierCurve3(v3(...a), v3((a[0] + b[0]) / 2, 2.35, (a[2] + b[2]) / 2), v3(...b));
       terrace.add(new THREE.Mesh(new THREE.TubeGeometry(c, 40, 0.006, 4), std('#1A1410')));
@@ -1327,7 +1353,10 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       }
       terrace.add(inst);
       const pg = new THREE.BufferGeometry(); pg.setAttribute('position', new THREE.BufferAttribute(glowPts, 3));
-      terrace.add(new THREE.Points(pg, new THREE.PointsMaterial({ map: glowTex, color: '#FFAA5C', size: 0.55, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false })));
+      pg.setAttribute('color', new THREE.BufferAttribute(new Float32Array(n * 3).fill(1), 3));
+      terrace.add(new THREE.Points(pg, new THREE.PointsMaterial({ map: glowTex, color: '#FFAA5C', size: 0.55, transparent: true, opacity: 0.7, blending: THREE.AdditiveBlending, depthWrite: false, vertexColors: true })));
+      for (let i = 0; i < n; i++) inst.setColorAt(i, white);
+      twinkles.push({ inst, pts: pg.attributes.color, n, seed: twinkles.length * 7.3 });
     });
 
     // bornes lumineuses le long de la clôture
@@ -1493,7 +1522,8 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     loadImage('assets/img/logo-mark.svg').then((img) => { logoImg = img; }),
     document.fonts ? document.fonts.ready : Promise.resolve(),
   ]).then(() => textures.forEach((t) => t.userData.redraw()));
-  const clockTimer = setInterval(() => boardTex.userData.redraw(), 30000);
+  // l'écran des avis change de message toutes les 8 s (et l'heure suit)
+  const clockTimer = setInterval(() => { quoteIdx++; boardTex.userData.redraw(); }, 8000);
 
   function setFill(f) {
     state.fill = f;
@@ -1524,6 +1554,16 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       fireLight.intensity = 2.0 + fl * 0.8;
     }
     updateFx(dt);
+    // guirlande : scintillement doux, déphasé ampoule par ampoule (pas de hasard : rythmes fixes)
+    twinkles.forEach((tw) => {
+      for (let i = 0; i < tw.n; i++) {
+        const k = 0.78 + 0.22 * Math.sin(t * (0.7 + ((i * 0.618 + tw.seed) % 1) * 1.1) + i * 2.4 + tw.seed);
+        tw.inst.instanceColor.setXYZ(i, k, k, k); // multiplie la couleur du matériau
+        tw.pts.setXYZ(i, k, k, k);
+      }
+      tw.inst.instanceColor.needsUpdate = true;
+      tw.pts.needsUpdate = true;
+    });
 
     // sous l'eau ?
     if (camera) {

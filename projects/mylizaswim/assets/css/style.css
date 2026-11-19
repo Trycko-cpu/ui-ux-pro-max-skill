@@ -521,6 +521,16 @@ html.menu-open .topbar #menuBtn { background: #fff; color: var(--espresso); }
   transition: opacity 0.8s var(--ease), visibility 0.8s;
 }
 .loader.is-done { opacity: 0; visibility: hidden; }
+/* image fixe de la première vue (rendu de la scène, lumière cuite comprise) : la 3D prend le relais à l'identique */
+.loader::before {
+  content: ""; position: absolute; inset: 0; z-index: -1;
+  background: linear-gradient(180deg, rgba(20, 13, 9, 0.62), rgba(20, 13, 9, 0.38) 45%, rgba(20, 13, 9, 0.7)), url("../img/poster-desktop.webp") center / cover no-repeat;
+  animation: posterIn 1.8s var(--ease) both;
+}
+@media (max-width: 900px) and (orientation: portrait) {
+  .loader::before { background-image: linear-gradient(180deg, rgba(20, 13, 9, 0.62), rgba(20, 13, 9, 0.38) 45%, rgba(20, 13, 9, 0.7)), url("../img/poster-mobile.webp"); }
+}
+@keyframes posterIn { from { opacity: 0; transform: scale(1.05); } to { opacity: 1; transform: none; } }
 .loader-mark { width: 72px; height: 72px; }
 .loader-bar { width: 120px; height: 2px; border-radius: 2px; background: rgba(255, 255, 255, 0.16); overflow: hidden; }
 .loader-bar span { display: block; height: 100%; width: 0; background: #fff; transition: width 0.4s var(--ease); }
