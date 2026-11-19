@@ -844,7 +844,9 @@ export function start(ctx) {
   stationPose(S.cur, P, L);
   camera.position.copy(P); camera.lookAt(L);
 
-  world.ready.then(() => {
+  // on attend la lumière cuite et les reflets de l'eau (6 s au plus) : pas de « saut » d'éclairage à l'arrivée
+  const bakedOrLate = Promise.race([Promise.all([world.baked, world.reflections]), new Promise((r) => setTimeout(r, 6000))]);
+  world.ready.then(() => { loaderBar.style.width = '50%'; return bakedOrLate; }).then(() => {
     shadowFrames = 3;
     loaderBar.style.width = '70%';
     return renderer.compileAsync ? renderer.compileAsync(scene, camera) : null;

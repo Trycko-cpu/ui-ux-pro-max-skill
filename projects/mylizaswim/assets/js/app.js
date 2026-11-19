@@ -109,6 +109,7 @@ const html = document.documentElement;
 const $ = (s, r = document) => r.querySelector(s);
 const $$ = (s, r = document) => [...r.querySelectorAll(s)];
 const reduceMotion = matchMedia('(prefers-reduced-motion: reduce)').matches;
+let classicReady = false; // déclaré tôt : initClassic() peut être appelé dès le chargement
 const fmt = (n) => `${n} €`;
 
 $('#year').textContent = new Date().getFullYear();
@@ -374,7 +375,6 @@ function boot3D() {
     });
 }
 
-let classicReady = false;
 function initClassic() {
   $('#loader')?.classList.add('is-done');
   if (classicReady) return;

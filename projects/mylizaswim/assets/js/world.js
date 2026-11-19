@@ -74,6 +74,18 @@ function loadImage(src) {
   });
 }
 const rnd = (a, b) => a + Math.random() * (b - a);
+// hasard reproductible : la scène doit être identique à chaque chargement
+// pour que la lumière cuite dans Blender retombe exactement sur les mêmes surfaces
+function seededRandom(seed) {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6D2B79F5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
 // sphère déformée : un feuillage qui n'a pas l'air d'une boule parfaite
 function blobGeo(r, seed = 1, detail = 4, amp = 0.13) {
   const g = new THREE.IcosahedronGeometry(r, detail);
@@ -94,6 +106,8 @@ function blobGeo(r, seed = 1, detail = 4, amp = 0.13) {
 ================================================================== */
 export function createWorld(renderer, { quality = 'high' } = {}) {
   const scene = new THREE.Scene();
+  const nativeRandom = Math.random;
+  Math.random = seededRandom(20261119);
   // par défaut, tout objet créé ici est ajouté à la scène
   const mesh = (geo, mat, x = 0, y = 0, z = 0, parent = scene) => meshAt(geo, mat, x, y, z, parent);
   const low = quality === 'low';
@@ -206,6 +220,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const lightPool = (x, z, rx, rz, color, opacity, y = 0.012, parent = scene) => {
     const m = meshAt(new THREE.PlaneGeometry(rx * 2, rz * 2), new THREE.MeshBasicMaterial({ map: glowTex, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false }), x, y, z, parent);
     m.rotation.x = -Math.PI / 2; m.renderOrder = 2;
+    m.userData.fake = { type: 'pool', color, opacity };
     return m;
   };
   // lavage de mur : un cône de lumière qui glisse sur la pierre
@@ -221,6 +236,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     const m = meshAt(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: washTex, color, transparent: true, opacity, blending: THREE.AdditiveBlending, depthWrite: false }), x, y, z, scene);
     m.rotation.y = rotY; if (up) m.rotation.z = Math.PI;
     m.renderOrder = 3;
+    m.userData.fake = { type: 'wash', color, opacity, w, h };
     return m;
   };
   const steel = std('#D3D8DF', { metalness: 1, roughness: 0.18 });
@@ -407,13 +423,29 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       uWall: { value: new THREE.Color('#6A4A33') },
       uLed: { value: new THREE.Color('#FFB066') },
       uFill: { value: 1 },
+      uNormal: { value: null },
+      uNormalOn: { value: 0 },
+      uEnv: { value: null },
+      uEnvOn: { value: 0 },
+      uBoxMin: { value: v3(-HALL.x, -2, HALL.far) },
+      uBoxMax: { value: v3(HALL.x, HALL.h, HALL.near) },
+      uCubePos: { value: v3(0, POOL.water + 0.02, -POOL.l / 2) },
     },
     vertexShader: /* glsl */`
       varying vec3 vW; varying vec2 vUv;
       void main(){ vUv = uv; vec4 w = modelMatrix * vec4(position,1.0); vW = w.xyz; gl_Position = projectionMatrix * viewMatrix * w; }`,
     fragmentShader: /* glsl */`
       uniform float uTime; uniform vec3 uShallow; uniform vec3 uDeep; uniform vec3 uCeil; uniform vec3 uWall; uniform vec3 uLed; uniform float uFill;
+      uniform sampler2D uNormal; uniform float uNormalOn;
+      uniform samplerCube uEnv; uniform float uEnvOn; uniform vec3 uBoxMin; uniform vec3 uBoxMax; uniform vec3 uCubePos;
       varying vec3 vW; varying vec2 vUv;
+      // reflet corrigé par la boîte du hall : le cube capturé au centre du bassin se recale sur les murs
+      vec3 boxProject(vec3 pos, vec3 dir){
+        vec3 t1 = (uBoxMax - pos) / dir, t2 = (uBoxMin - pos) / dir;
+        vec3 tf = max(t1, t2);
+        float d = min(min(tf.x, tf.y), tf.z);
+        return pos + dir * d - uCubePos;
+      }
       ${NOISE}
       float height(vec2 p){
         float h = 0.0;
@@ -427,6 +459,13 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         float e = 0.04;
         float h = height(p);
         vec3 n = normalize(vec3(-(height(p + vec2(e,0.0))-h)/e*0.06, 1.0, -(height(p + vec2(0.0,e))-h)/e*0.06));
+        if (uNormalOn > 0.5) {
+          // vaguelettes de la simulation d'océan de Blender, deux couches qui dérivent
+          vec2 a = texture2D(uNormal, p * 0.19 + vec2(uTime * 0.011, uTime * 0.006)).xy * 2.0 - 1.0;
+          vec2 b = texture2D(uNormal, mat2(0.8, -0.6, 0.6, 0.8) * p * 0.43 - vec2(uTime * 0.017, -uTime * 0.01)).xy * 2.0 - 1.0;
+          vec2 sl = (a + b * 0.7) * 0.11;
+          n = normalize(vec3(n.x * 0.6 + sl.x, 1.0, n.z * 0.6 + sl.y));
+        }
         vec3 V = normalize(cameraPosition - vW);
         if (!gl_FrontFacing) {
           // dessous de la surface : fenêtre de Snell lumineuse, miroir sombre en incidence rasante
@@ -444,11 +483,19 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         float centre = smoothstep(0.0, 0.18, min(edge.x*2.0, edge.y*4.0));
         vec3 col = mix(uShallow, uDeep, 0.25 + 0.35*centre);
         vec3 R = reflect(-V, n);
-        vec3 refl = mix(uWall, uCeil, smoothstep(0.15, 0.6, R.y));
-        // reflets des rubans LED du plafond
-        float led = smoothstep(0.985, 1.0, sin(R.x / max(R.y, 0.2) * 7.0 + 1.3) * 0.5 + 0.5) * smoothstep(0.3, 0.7, R.y);
-        col = mix(col, refl, clamp(fres*0.85, 0.0, 0.85));
-        col += uLed * led * 0.8;
+        R.y = max(R.y, 0.02);
+        if (uEnvOn > 0.5) {
+          // vrai reflet du hall (capturé une fois, lumière cuite comprise)
+          vec3 refl = textureCube(uEnv, boxProject(vW, normalize(R))).rgb;
+          float schlick = 0.02 + 0.98 * pow(1.0 - max(dot(n, V), 0.0), 5.0);
+          col = mix(col, refl, clamp(0.16 + schlick * 1.25, 0.0, 0.9));
+        } else {
+          vec3 refl = mix(uWall, uCeil, smoothstep(0.15, 0.6, R.y));
+          // reflets des rubans LED du plafond
+          float led = smoothstep(0.985, 1.0, sin(R.x / max(R.y, 0.2) * 7.0 + 1.3) * 0.5 + 0.5) * smoothstep(0.3, 0.7, R.y);
+          col = mix(col, refl, clamp(fres*0.85, 0.0, 0.85));
+          col += uLed * led * 0.8;
+        }
         float glint = smoothstep(0.9, 1.0, vnoise(p*10.0 + uTime*1.3)) * 0.35;
         col += vec3(1.0, 0.92, 0.8) * glint * (0.3 + fres);
         float rim = 1.0 - smoothstep(0.0, 0.012, min(edge.x*0.5, edge.y*0.25));
@@ -458,6 +505,13 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         #include <tonemapping_fragment>
         #include <colorspace_fragment>
       }`,
+  });
+  new THREE.TextureLoader().load('assets/img/water-normal.webp', (t) => {
+    t.wrapS = t.wrapT = THREE.RepeatWrapping;
+    t.colorSpace = THREE.NoColorSpace;
+    t.anisotropy = 4;
+    waterMat.uniforms.uNormal.value = t;
+    waterMat.uniforms.uNormalOn.value = 1;
   });
   const water = mesh(new THREE.PlaneGeometry(POOL.w - 0.01, POOL.l - 0.01), waterMat, 0, POOL.water, -POOL.l / 2);
   water.rotation.x = -Math.PI / 2;
@@ -613,6 +667,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       mesh(rbox(0.16, 0.5, 0.12, 0.03), bronze, s * (doorW / 2 + 0.6), 2.3, zb - 0.1);
       const sc = mesh(new THREE.PlaneGeometry(1.2, 2.4), new THREE.MeshBasicMaterial({ map: washTex, color: '#FFB066', transparent: true, opacity: 0.55, blending: THREE.AdditiveBlending, depthWrite: false }), s * (doorW / 2 + 0.6), 1.2, zb - 0.06);
       sc.rotation.y = Math.PI;
+      sc.userData.fake = { type: 'wash', color: '#FFB066', opacity: 0.55, w: 1.2, h: 2.4 };
     });
     // vantaux vitrés ouverts
     [-1, 1].forEach((s) => {
@@ -834,6 +889,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     const slatGeo = new THREE.BoxGeometry(0.07, 0.06, len);
     const n = 37;
     const slats = new THREE.InstancedMesh(slatGeo, std('#4A3022', { roughness: 0.55 }), n);
+    slats.userData.merge = true;
     for (let i = 0; i < n; i++) { dummy.position.set(-2.88 + i * 0.16, HALL.h - 0.07, (slatZ0 + slatZ1) / 2); dummy.rotation.set(0, 0, 0); dummy.updateMatrix(); slats.setMatrixAt(i, dummy.matrix); }
     scene.add(slats);
   }
@@ -967,6 +1023,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     [LM + 0.2 - 2.8, LM + 0.2 + 2.8].forEach((z) => mesh(new THREE.BoxGeometry(7, 0.04, 0.04), ledBlueM, -0.6, LOUNGE.h - 0.1, z, lounge));
     const cove = mesh(new THREE.PlaneGeometry(7.6, 6.2), new THREE.MeshBasicMaterial({ map: glowTex, color: '#3F4BFF', transparent: true, opacity: 0.35, blending: THREE.AdditiveBlending, depthWrite: false }), -0.6, LOUNGE.h - 0.13, LM + 0.2, lounge);
     cove.rotation.x = Math.PI / 2;
+    cove.userData.fake = { type: 'cove' };
     for (let x = -5.5; x <= 5.5; x += 2.2) for (let z = LZ0 + 1.4; z < LZ1; z += 2.4) {
       if (Math.abs(x + 0.6) < 3.4 && Math.abs(z - LM - 0.2) < 2.7) continue;
       mesh(new THREE.CircleGeometry(0.06, 16), downM, x, LOUNGE.h - 0.005, z, lounge).rotation.x = Math.PI / 2;
@@ -1104,7 +1161,9 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     // bar à droite : bois sombre, plateau pierre, jardinière, suspensions
     const barM = std('#2A1C14', { roughness: 0.4 });
     // fond de bar rétroéclairé orange
-    mesh(new THREE.PlaneGeometry(6.4, 1.6), new THREE.MeshBasicMaterial({ map: washTex, color: '#FF8E45', transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }), LOUNGE.x - 0.02, 2.2, 8.3, lounge).rotation.y = -Math.PI / 2;
+    const barWash = mesh(new THREE.PlaneGeometry(6.4, 1.6), new THREE.MeshBasicMaterial({ map: washTex, color: '#FF8E45', transparent: true, opacity: 0.45, blending: THREE.AdditiveBlending, depthWrite: false }), LOUNGE.x - 0.02, 2.2, 8.3, lounge);
+    barWash.rotation.y = -Math.PI / 2;
+    barWash.userData.fake = { type: 'wash', color: '#FF8E45', opacity: 0.45, w: 6.4, h: 1.6 };
     mesh(rbox(0.72, 1.05, 6.2, 0.03), barM, 5.3, 0.525, 8.3, lounge).castShadow = true;
     mesh(rbox(0.86, 0.06, 6.4, 0.02), std('#D8CFC2', { roughness: 0.35 }), 5.3, 1.08, 8.3, lounge);
     const planter = mesh(rbox(0.4, 0.34, 5.8, 0.15, 3), leafM, 5.45, 1.28, 8.3, lounge);
@@ -1172,6 +1231,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     // clôture en lames de bois
     const slatGeo = new THREE.BoxGeometry(0.09, 1.7, 0.05);
     const slats = new THREE.InstancedMesh(slatGeo, std('#A5714A', { roughness: 0.7 }), 150);
+    slats.userData.merge = true;
     for (let i = 0; i < 150; i++) { dummy.position.set(-15 + i * 0.125, 0.85, -40); dummy.rotation.set(0, 0, 0); dummy.updateMatrix(); slats.setMatrixAt(i, dummy.matrix); }
     slats.castShadow = true; slats.receiveShadow = true;
     terrace.add(slats);
@@ -1245,6 +1305,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       const slatGeo = new THREE.BoxGeometry(0.07, 0.12, 12.6);
       const ns = 31;
       const pslats = new THREE.InstancedMesh(slatGeo, wood, ns);
+      pslats.userData.merge = true;
       for (let i = 0; i < ns; i++) { dummy.position.set(-7.5 + i * 0.5, 3.17, -28.4); dummy.rotation.set(0, 0, 0); dummy.updateMatrix(); pslats.setMatrixAt(i, dummy.matrix); }
       pslats.castShadow = true;
       terrace.add(pslats);
@@ -1352,6 +1413,21 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   dolphin.swim = swim;
   dolphin.root.scale.setScalar(1.4);
   scene.add(dolphin.root);
+  // version modélisée dans Blender (une seule peau, nageoires fondues dans le corps) :
+  // elle remplace la version procédurale dès qu'elle est chargée
+  loadDolphinMesh('assets/models/dolphin.bin').then((geo) => {
+    dolphin.body.clear();
+    dolphin.body.add(new THREE.Mesh(geo, glass));
+    const eyeM = new THREE.MeshPhysicalMaterial({ color: '#0A0F3A', roughness: 0.12, clearcoat: 1, clearcoatRoughness: 0.05 });
+    const eyeG = new THREE.SphereGeometry(0.011, 20, 14);
+    [-1, 1].forEach((s) => {
+      const e = new THREE.Mesh(eyeG, eyeM);
+      e.position.set(0.372, 0.012, 0.064 * s);
+      e.scale.set(1.25, 0.8, 0.55);
+      e.rotation.y = -0.35 * s;
+      dolphin.body.add(e);
+    });
+  }).catch(() => { /* on garde le dauphin procédural */ });
 
   /* ---------- éclaboussures & ondes ---------- */
   const ripples = [];
@@ -1472,15 +1548,72 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     }
   }
 
+  // objets qui bougent : jamais de lumière cuite sur eux
+  [dolphin.root, water, caustics, sky, under, ...ropes, ...floaters.map((f) => f.obj)].forEach((o) => { o.userData.dynamic = true; });
+  const buoyObj = buoyStand.getObjectByName('buoy');
+  if (buoyObj) buoyObj.userData.dynamic = true;
+  if (fireMesh) fireMesh.userData.dynamic = true;
+  mergeStaticInstances(scene);
+  scene.updateMatrixWorld(true);
+  Math.random = nativeRandom;
+
+  // lumière cuite dans Blender (blender/bake.py) : chargée en arrière-plan, la scène reste
+  // éclairée en temps réel tant qu'elle n'est pas là (ou si le chargement échoue)
+  const baked = applyBake(scene, 'assets/bake/').catch(() => false);
+  baked.then((n) => { window.__bakeApplied = n; }); // pour les tests automatisés
+
+  // reflets de l'eau : le hall est capturé une fois (après la lumière cuite), en cube
+  let envRT = null;
+  function captureReflections() {
+    const half = renderer.extensions.has('EXT_color_buffer_float') || renderer.extensions.has('EXT_color_buffer_half_float');
+    envRT = new THREE.WebGLCubeRenderTarget(low ? 128 : 256, { type: half ? THREE.HalfFloatType : THREE.UnsignedByteType, generateMipmaps: true, minFilter: THREE.LinearMipmapLinearFilter });
+    const cubeCam = new THREE.CubeCamera(0.05, 220, envRT);
+    cubeCam.position.copy(waterMat.uniforms.uCubePos.value);
+    const hidden = [water, dolphin.root, under, caustics];
+    const was = hidden.map((o) => o.visible);
+    hidden.forEach((o) => { o.visible = false; });
+    renderer.shadowMap.needsUpdate = true; // ombres prêtes avant la capture (cartes d'ombre statiques)
+    cubeCam.update(renderer, scene);
+    hidden.forEach((o, i) => { o.visible = was[i]; });
+    waterMat.uniforms.uEnv.value = envRT.texture;
+    waterMat.uniforms.uEnvOn.value = 1;
+  }
+  const reflections = Promise.all([ready, baked]).then(() => new Promise((res) => requestAnimationFrame(() => { captureReflections(); res(true); })));
+
   return {
-    scene, update, ready, clickables, anchors, dolphin, splash, ripple, setFill, state, POOL,
-    stop: () => clearInterval(clockTimer),
+    scene, update, ready, clickables, anchors, dolphin, splash, ripple, setFill, state, POOL, baked, reflections,
+    stop: () => { clearInterval(clockTimer); envRT?.dispose(); },
     setLowFx: (on) => { beams.forEach((b) => { b.visible = !on; }); },
   };
 }
 
 /* ==================================================================
-   Dauphin procédural : corps à sections elliptiques (dos, ventre et
+   Dauphin modélisé dans Blender (blender/dolphin.py) : binaire compact
+   'MLSD' | n sommets | n indices | échelle | i16 pos | i8 normales | u16 indices
+================================================================== */
+function loadDolphinMesh(url) {
+  return fetch(url).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.arrayBuffer(); }).then((buf) => {
+    const dv = new DataView(buf);
+    if (String.fromCharCode(dv.getUint8(0), dv.getUint8(1), dv.getUint8(2), dv.getUint8(3)) !== 'MLSD') throw new Error('format');
+    const nv = dv.getUint32(4, true), ni = dv.getUint32(8, true), k = dv.getFloat32(12, true) / 32767;
+    const p16 = new Int16Array(buf, 16, nv * 3);
+    const n8 = new Int8Array(buf, 16 + nv * 6, nv * 4);
+    const idx = new Uint16Array(buf.slice(16 + nv * 10, 16 + nv * 10 + ni * 2));
+    const pos = new Float32Array(nv * 3), nrm = new Float32Array(nv * 3);
+    for (let i = 0; i < nv; i++) {
+      for (let c = 0; c < 3; c++) { pos[i * 3 + c] = p16[i * 3 + c] * k; nrm[i * 3 + c] = n8[i * 4 + c] / 127; }
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(pos, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(nrm, 3));
+    geo.setIndex(new THREE.BufferAttribute(idx, 1));
+    geo.computeBoundingSphere();
+    return geo;
+  });
+}
+
+/* ==================================================================
+   Dauphin procédural (repli si le modèle ne charge pas) : corps à sections elliptiques (dos, ventre et
    flancs distincts), melon, rostre, nageoires falciformes. Tout est
    cuit dans le repère du corps pour que l'ondulation du shader
    entraîne aussi la caudale.
@@ -1573,4 +1706,138 @@ function buildDolphin(material) {
   fin(fs, 0.014, M(-0.47, 0.0, 0, Math.PI / 2, 0, 0));
 
   return { root, pitch, body };
+}
+
+/* ==================================================================
+   Lumière cuite (Blender / Cycles)
+   - bakeTargets() : liste ordonnée et stable des surfaces fixes éclairées,
+     identique ici et dans l'export vers Blender (clé = géométrie + position + couleur)
+   - applyBake() : charge les cartes de lumière et les coordonnées UV de Blender,
+     puis remplace l'éclairage diffus temps réel de ces surfaces par la lumière cuite
+     (ombres douces, lumière indirecte). Les reflets spéculaires restent en temps réel.
+================================================================== */
+function mergeStaticInstances(root) {
+  const todo = [];
+  root.traverse((o) => { if (o.isInstancedMesh && o.userData.merge) todo.push(o); });
+  const m = new THREE.Matrix4(), nm = new THREE.Matrix3(), v = new THREE.Vector3();
+  todo.forEach((inst) => {
+    const g = inst.geometry, n = inst.count, vc = g.attributes.position.count;
+    const P = new Float32Array(vc * n * 3), N = new Float32Array(vc * n * 3);
+    const uv = g.attributes.uv, U = uv ? new Float32Array(vc * n * 2) : null;
+    const idx = g.index, I = idx ? new Uint32Array(idx.count * n) : null;
+    for (let i = 0; i < n; i++) {
+      inst.getMatrixAt(i, m);
+      nm.getNormalMatrix(m);
+      for (let k = 0; k < vc; k++) {
+        v.fromBufferAttribute(g.attributes.position, k).applyMatrix4(m);
+        P.set([v.x, v.y, v.z], (i * vc + k) * 3);
+        v.fromBufferAttribute(g.attributes.normal, k).applyMatrix3(nm).normalize();
+        N.set([v.x, v.y, v.z], (i * vc + k) * 3);
+        if (U) U.set([uv.getX(k), uv.getY(k)], (i * vc + k) * 2);
+      }
+      if (I) for (let k = 0; k < idx.count; k++) I[i * idx.count + k] = idx.getX(k) + i * vc;
+    }
+    const geo = new THREE.BufferGeometry();
+    geo.setAttribute('position', new THREE.BufferAttribute(P, 3));
+    geo.setAttribute('normal', new THREE.BufferAttribute(N, 3));
+    if (U) geo.setAttribute('uv', new THREE.BufferAttribute(U, 2));
+    if (I) geo.setIndex(new THREE.BufferAttribute(I, 1));
+    const merged = new THREE.Mesh(geo, inst.material);
+    merged.position.copy(inst.position); merged.quaternion.copy(inst.quaternion); merged.scale.copy(inst.scale);
+    merged.castShadow = inst.castShadow; merged.receiveShadow = inst.receiveShadow;
+    inst.parent.add(merged);
+    inst.parent.remove(inst);
+  });
+}
+
+function isDynamic(o) {
+  for (let p = o; p; p = p.parent) if (p.userData.dynamic) return true;
+  return false;
+}
+const matList = (o) => (Array.isArray(o.material) ? o.material : [o.material]);
+// 'lit' : surface fixe qui reçoit la lumière cuite ; 'emit' : source lumineuse (LED, écrans) pour Blender
+export function bakeKind(o) {
+  if (!o.isMesh || o.isInstancedMesh || isDynamic(o)) return null;
+  const ms = matList(o);
+  if (ms.every((mt) => (mt.isMeshStandardMaterial) && mt.opacity >= 0.99 && !(mt.transmission > 0))) return 'lit';
+  if (ms.length === 1 && ms[0].isMeshBasicMaterial && ms[0].blending === THREE.NormalBlending && ms[0].opacity >= 0.75 && !(ms[0].transparent && ms[0].map) && !o.userData.fake) return 'emit';
+  return null;
+}
+export function bakeTargets(root) {
+  root.updateMatrixWorld(true);
+  const out = [], seen = new Map(), wp = new THREE.Vector3();
+  root.traverse((o) => {
+    const kind = bakeKind(o);
+    if (!kind) return;
+    o.getWorldPosition(wp);
+    const g = o.geometry;
+    let key = `${g.type}:${g.attributes.position.count}:${wp.x.toFixed(2)},${wp.y.toFixed(2)},${wp.z.toFixed(2)}:${matList(o)[0].color.getHexString()}`;
+    const k = seen.get(key) || 0;
+    seen.set(key, k + 1);
+    if (k) key += `#${k}`;
+    out.push({ obj: o, key, kind });
+  });
+  return out;
+}
+
+const bakeAmbient = { value: 0.18 }; // part de l'ambiance temps réel conservée sur les surfaces cuites
+function bakedMaterial(src, tex, intensity, cache) {
+  const id = `${src.uuid}|${tex.uuid}`;
+  if (cache.has(id)) return cache.get(id);
+  const m = src.clone();
+  m.lightMap = tex;
+  m.lightMapIntensity = intensity;
+  m.onBeforeCompile = (sh) => {
+    sh.uniforms.uBakeAmb = bakeAmbient;
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nuniform float uBakeAmb;')
+      // le diffus direct et l'ambiance sont dans la carte de lumière : on ne garde que les reflets
+      .replace('#include <lights_fragment_begin>', '#include <lights_fragment_begin>\nreflectedLight.directDiffuse *= 0.0;\nirradiance *= uBakeAmb;')
+      .replace('#include <lights_fragment_end>', 'iblIrradiance *= uBakeAmb;\n#include <lights_fragment_end>');
+  };
+  m.customProgramCacheKey = () => 'mls-baked';
+  cache.set(id, m);
+  return m;
+}
+
+export async function applyBake(root, base) {
+  const meta = await fetch(`${base}bake.json`).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.json(); });
+  const bin = await fetch(`${base}bake.bin`).then((r) => { if (!r.ok) throw new Error(String(r.status)); return r.arrayBuffer(); });
+  const loader = new THREE.TextureLoader();
+  const atlases = await Promise.all(meta.atlases.map((a) => loader.loadAsync(base + a.file).then((t) => {
+    t.colorSpace = THREE.SRGBColorSpace;
+    t.channel = 1;
+    t.flipY = true;
+    return { tex: t, intensity: Math.PI * a.scale * (meta.exposure || 1) };
+  })));
+  const cache = new Map();
+  let applied = 0;
+  bakeTargets(root).forEach(({ obj, key, kind }) => {
+    const e = meta.meshes[key];
+    if (kind !== 'lit' || !e) return;
+    const src = e.s16 ? new Uint16Array(bin, e.src, e.nv) : new Uint32Array(bin, e.src, e.nv);
+    const idx = e.i16 ? new Uint16Array(bin, e.idx, e.ni) : new Uint32Array(bin, e.idx, e.ni);
+    const uvq = new Uint16Array(bin, e.uv, e.nv * 2);
+    const uv1 = new Float32Array(e.nv * 2);
+    for (let i = 0; i < uvq.length; i++) uv1[i] = uvq[i] / 65535;
+    const g0 = obj.geometry, g = new THREE.BufferGeometry();
+    Object.entries(g0.attributes).forEach(([name, a]) => {
+      const out = new Float32Array(e.nv * a.itemSize);
+      for (let i = 0; i < e.nv; i++) for (let c = 0; c < a.itemSize; c++) out[i * a.itemSize + c] = a.array[src[i] * a.itemSize + c];
+      g.setAttribute(name, new THREE.BufferAttribute(out, a.itemSize));
+    });
+    g.setAttribute('uv1', new THREE.BufferAttribute(uv1, 2));
+    g.setIndex(new THREE.BufferAttribute(idx, 1));
+    g0.groups.forEach((gr) => g.addGroup(gr.start, gr.count, gr.materialIndex));
+    g.computeBoundingSphere();
+    obj.geometry = g;
+    const a = atlases[e.atlas];
+    obj.material = Array.isArray(obj.material)
+      ? obj.material.map((mt) => bakedMaterial(mt, a.tex, a.intensity, cache))
+      : bakedMaterial(obj.material, a.tex, a.intensity, cache);
+    applied++;
+  });
+  // les fausses flaques et lavages de lumière deviennent inutiles : la vraie lumière est cuite
+  root.traverse((o) => { if (o.userData.fake && o.userData.fake.type !== 'halo') o.visible = false; });
+  return applied;
 }

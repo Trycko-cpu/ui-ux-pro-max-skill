@@ -69,10 +69,33 @@ assets/js/scene-app.js  expérience 3D : caméra, défilement, pastilles, dauphi
 assets/js/world.js      salon, piscine, terrasse et dauphin en three.js (100 % procédural)
 assets/img/             logo vectorisé (SVG), photo d'Emmy
 assets/fonts/           Inter (variable), licence OFL
+assets/models/          dauphin modélisé dans Blender (binaire compact)
+assets/bake/            lumière cuite dans Blender : atlas WebP + UV de lumière (bake.json, bake.bin)
+blender/                scripts Blender (dauphin, cuisson de la lumière, eau) et export de la scène
 vendor/three/           three.js r169 (MIT)
 ```
 
 Les positions caméra de chaque étape sont dans `STATIONS` (`app.js`), avec une variante mobile (`camM` / `lookM`) et une focale propre si besoin (`fov` / `fovM`).
+
+## Blender : dauphin, lumière, eau
+
+Trois éléments sont fabriqués dans Blender 5.3, utilisé comme module Python (`pip install bpy`, aucune interface) :
+
+- **Le dauphin** (`blender/dolphin.py` → `assets/models/dolphin.bin`) : corps et nageoires fusionnés en une seule peau (remaillage voxel, lissage, décimation à 24 000 triangles). Le verre ne montre plus de jointures. La version procédurale reste en secours.
+- **La lumière** (`blender/bake.py` → `assets/bake/`) : la scène fixe est exportée depuis three.js, reconstruite dans Blender avec de vraies sources (spots, soleil couchant, LED, écrans, guirlande). Les fausses taches de lumière deviennent de vrais projecteurs. Cycles calcule l'éclairage direct et indirect, les ombres douces et les rebonds colorés, puis l'image est débruitée (Intel Open Image Denoise, fourni avec Blender) et encodée en WebP. Dans le navigateur, ces cartes remplacent l'éclairage diffus temps réel ; les reflets restent en temps réel.
+- **L'eau** (`blender/water.py` → `assets/img/water-normal.webp`) : vaguelettes tirées de la simulation d'océan de Blender (carte qui se répète sans couture). Les reflets viennent d'une capture du hall faite une fois au chargement, recalée sur les murs (projection de boîte).
+
+Relancer la cuisson après une modification du décor (`world.js`) :
+
+```bash
+pip install bpy playwright            # bpy 5.3 exige Python 3.13
+cd projects/mylizaswim && python3 -m http.server 8765 &
+node blender/export-scene.cjs http://localhost:8765/ /tmp/bake-src
+python blender/bake.py -- /tmp/bake-src /tmp/bake-out bake 20 2048   # échantillons, taille du hall
+python3 blender/encode.py /tmp/bake-out assets/bake
+```
+
+La scène est construite avec un hasard reproductible : les cartes retombent exactement sur les mêmes surfaces. Si une surface change (taille, position, couleur), elle repasse simplement en éclairage temps réel jusqu'à la prochaine cuisson.
 
 ## Choix de design
 
