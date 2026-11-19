@@ -45,7 +45,7 @@ const STATIONS = [
     cam: [0, 1.75, 2.3], look: [0, 1.15, -14], camM: [0, 1.85, 0.2], lookM: [0, 0.95, -14],
     fov: 50, fovM: 72,
     dolphin: [0, -4.6],
-    line: 'Ces trois lumières sont les trois étapes de la méthode MyLizaSwim. Cliquez pour en savoir plus.',
+    line: 'Sensation, Expression, Application. Cliquez pour en savoir plus sur la méthode MyLizaSwim.',
   },
   {
     id: 'coach', label: 'Votre coach', title: 'Votre coach', cta: 'Rencontrer Emmy',
