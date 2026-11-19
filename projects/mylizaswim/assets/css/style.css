@@ -536,6 +536,12 @@ html.menu-open .topbar #menuBtn { background: #fff; color: var(--espresso); }
 .toast p { margin-bottom: 12px; font-size: 15px; line-height: 1.45; }
 .toast-actions { display: flex; flex-wrap: wrap; gap: 8px; }
 
+/* ---------- vignettage : les bords de l'image s'assombrissent légèrement (rendu « caméra ») ---------- */
+.scene-vignette {
+  position: fixed; inset: 0; z-index: 4; pointer-events: none;
+  background: radial-gradient(130% 110% at 50% 45%, rgba(12, 7, 4, 0) 55%, rgba(12, 7, 4, 0.42) 100%);
+}
+
 /* ---------- sous l'eau ---------- */
 .underwater-fx {
   position: fixed; inset: 0; z-index: 5; pointer-events: none; opacity: 0; transition: opacity 0.45s var(--ease);
@@ -558,7 +564,7 @@ html.underwater .underwater-fx { opacity: 1; }
 /* ==================================================================
    MODE CLASSIQUE (sans 3D), aussi utilisé sans JS ou sans WebGL
 ================================================================== */
-html.classic .scene, html.classic .pins, html.classic .rail, html.classic .mascot, html.classic .scroll-hint, html.classic .underwater-fx,
+html.classic .scene, html.classic .scene-vignette, html.no-js .scene-vignette, html.classic .pins, html.classic .rail, html.classic .mascot, html.classic .scroll-hint, html.classic .underwater-fx,
 html.classic .progress, html.classic .toast, html.classic #soundBtn, html.classic .sheet-bar, html.classic .sheet-foot, html.classic .loader,
 html.no-js .scene, html.no-js .pins, html.no-js .rail, html.no-js .mascot, html.no-js .scroll-hint, html.no-js .underwater-fx,
 html.no-js .progress, html.no-js .toast, html.no-js #soundBtn, html.no-js .sheet-bar, html.no-js .sheet-foot, html.no-js .loader { display: none !important; }

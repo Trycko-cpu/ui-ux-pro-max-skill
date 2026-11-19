@@ -1780,7 +1780,7 @@ export function bakeTargets(root) {
   return out;
 }
 
-const bakeAmbient = { value: 0.18 }; // part de l'ambiance temps réel conservée sur les surfaces cuites
+const bakeAmbient = { value: 0.22 }; // part de l'ambiance temps réel conservée sur les surfaces cuites
 function bakedMaterial(src, tex, intensity, cache) {
   const id = `${src.uuid}|${tex.uuid}`;
   if (cache.has(id)) return cache.get(id);
@@ -1808,7 +1808,7 @@ export async function applyBake(root, base) {
     t.colorSpace = THREE.SRGBColorSpace;
     t.channel = 1;
     t.flipY = true;
-    return { tex: t, intensity: Math.PI * a.scale * (meta.exposure || 1) };
+    return { tex: t, intensity: Math.PI * a.scale * (a.gain || 1) * (meta.exposure || 1) };
   })));
   const cache = new Map();
   let applied = 0;
@@ -1838,6 +1838,6 @@ export async function applyBake(root, base) {
     applied++;
   });
   // les fausses flaques et lavages de lumière deviennent inutiles : la vraie lumière est cuite
-  root.traverse((o) => { if (o.userData.fake && o.userData.fake.type !== 'halo') o.visible = false; });
+  root.traverse((o) => { if (o.userData.fake && (o.userData.fake.type === 'pool' || o.userData.fake.type === 'wash')) o.visible = false; });
   return applied;
 }

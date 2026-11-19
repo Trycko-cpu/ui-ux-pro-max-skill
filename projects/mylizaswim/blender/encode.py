@@ -24,6 +24,7 @@ for a in meta['atlases']:
     img = Image.fromarray(np.clip(np.round(srgb * 255), 0, 255).astype(np.uint8)[::-1], 'RGB')
     img.save(os.path.join(dst, a['file']), 'WEBP', quality=90, method=6)
     a['scale'] = scale
+    a['gain'] = {'salon': 1.5, 'hall': 1.08}.get(a['zone'], 1.0)  # réglage artistique par zone
     print(f"{a['file']} : échelle {scale:.3f}, {os.path.getsize(os.path.join(dst, a['file'])) / 1024:.0f} Ko")
 # compactage : indices et sommets d'origine en 16 bits quand c'est possible, UV en 16 bits normalisés
 raw = open(os.path.join(src, 'bake.bin'), 'rb').read()
