@@ -853,7 +853,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   const quotes = [];
   document.querySelectorAll('#avis .feature-quote, #avis .quotes figure').forEach((el) => {
     const q = el.querySelector('p, blockquote'), who = el.querySelector('footer, figcaption');
-    if (q) quotes.push([q.textContent.replace(/[«»]/g, '').trim(), who ? who.textContent.trim() : '']);
+    if (q) quotes.push([q.textContent.replace(/[«»]/g, '').trim().replace(/ ([!?:;])/g, '\u00a0$1'), who ? who.textContent.trim() : '']);
   });
   if (!quotes.length) quotes.push(['Il a adoré et il n\'a plus peur à la plage !', 'Les parents d\'A.']);
   let quoteIdx = 0;
@@ -887,7 +887,7 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
     // le message, en grand (taille ajustée pour tenir sur trois lignes)
     const [text, who] = quotes[quoteIdx % quotes.length];
     let size = 64, lines;
-    do { g.font = `600 ${size}px ${FONT}`; lines = wrap(g, `« ${text} »`, w - 312 - 70); size -= 4; } while (lines.length > 3 && size > 36);
+    do { g.font = `600 ${size}px ${FONT}`; lines = wrap(g, `«\u00a0${text}\u00a0»`, w - 312 - 70); size -= 4; } while (lines.length > 3 && size > 36);
     const lh = (size + 4) * 1.18, y0 = 250 - ((lines.length - 1) * lh) / 2 - 10;
     g.fillStyle = '#ffffff';
     lines.forEach((l, i) => g.fillText(l, 312, y0 + i * lh));

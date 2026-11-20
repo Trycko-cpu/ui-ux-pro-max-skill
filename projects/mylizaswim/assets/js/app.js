@@ -24,7 +24,12 @@ const PRICES = {
 const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
 // photos des cours : visages des enfants floutés avant publication (voir README)
 // ex. { src: 'assets/img/cours/01.webp', alt: 'Emmy accompagne un enfant dans le petit bain' }
-const PHOTOS = [];
+const PHOTOS = [
+  { src: 'assets/img/cours/01.webp', alt: 'Emmy dans l\'eau avec une élève, au bord du bassin' },
+  { src: 'assets/img/cours/02.webp', alt: 'Échauffement en cerceaux avec un groupe d\'enfants' },
+  { src: 'assets/img/cours/03.webp', alt: 'Emmy entourée d\'enfants, tout sourire' },
+  { src: 'assets/img/cours/04.webp', alt: 'Emmy et son groupe d\'enfants en route vers la piscine' },
+];
 const DUR = { 30: 'de 30 minutes', 60: 'd\'une heure' };
 const UNIT = { 30: 'les 30 min', 60: 'l\'heure' };
 
@@ -55,10 +60,10 @@ const STATIONS = [
     line: 'Voici la chaise d\'Emmy. Découvrez qui vous accompagnera dans l\'eau.',
   },
   {
-    id: 'nageurs', label: 'Pour qui ?', pin: 'Pour qui ?', title: 'Pour qui ?', cta: 'Voir les cours',
+    id: 'nageurs', label: 'Pour qui ?', pin: 'Pour qui ?', title: 'Pour qui ?', cta: 'Voir les cours',
     cam: [0, 1.5, -5.6], look: [0, 0.55, 0.9], camM: [0, 2.9, -9.4], lookM: [0, 0.45, 0.9],
     dolphin: [-2.2, -1.0],
-    line: 'Un plot par âge : bébés nageurs, enfants, ados et adultes. Choisissez le vôtre.',
+    line: 'Un plot par âge : bébés nageurs, enfants, ados et adultes. Choisissez le vôtre.',
   },
   {
     // la caméra passe sous la surface : le dauphin fait sa ronde autour de l'échelle
@@ -71,7 +76,7 @@ const STATIONS = [
     id: 'tarifs', label: 'Tarifs', title: 'Tarifs', cta: 'Voir les tarifs',
     cam: [2.4, 2.0, -9.2], look: [5.0, 0.55, -12.3], camM: [1.8, 2.8, -8.4], lookM: [5.0, 0.5, -12.3],
     dolphin: [2.6, -11.0],
-    line: 'Sur le banc, une pile de serviettes par formule : seul, à deux ou à trois.',
+    line: 'Sur le banc, une pile de serviettes par formule : seul, à deux ou à trois.',
   },
   {
     id: 'avis', label: 'Avis', title: 'Avis', cta: 'Lire les avis',
@@ -102,7 +107,7 @@ const SUBPINS = {
 
 const EASTER = [
   'Une vrille, rien que pour vous.',
-  'Encore une ? D\'accord.',
+  'Encore une ? D\'accord.',
 ];
 
 /* ------------------------------------------------------------------ */
@@ -180,7 +185,7 @@ function setBooking(patch = {}) {
   if (CONFIG.whatsapp) {
     const who = $('#f-name').value.trim();
     const commune = booking.p === 1 ? $('#f-commune').value.trim() : '';
-    const text = `Bonjour Emmy${who ? `, c'est ${who}` : ''}. J'aimerais réserver : ${what.toLowerCase()}${commune ? ` à ${commune}` : ''} (${fmt(price)}). Quand seriez-vous disponible ?`;
+    const text = `Bonjour Emmy${who ? `, c'est ${who}` : ''}. J'aimerais réserver : ${what.toLowerCase()}${commune ? ` à ${commune}` : ''} (${fmt(price)}). Quand seriez-vous disponible ?`;
     waLink.href = `https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(text)}`;
     waLink.hidden = false;
   }
@@ -238,7 +243,7 @@ form.addEventListener('submit', async (e) => {
   const done = $('#formDone');
   done.hidden = false;
   $('#formDoneText').textContent = `Merci ${first}, j'ai bien reçu votre demande (${what.toLowerCase()}${data.commune ? ` à ${data.commune.trim()}` : ''}). Je vous recontacte très vite pour fixer le jour et l'heure.`
-    + (CONFIG.formEndpoint ? '' : ' Démo : le formulaire n\'est pas encore relié, rien n\'a été envoyé.');
+    + (CONFIG.formEndpoint ? '' : ' Démo : le formulaire n\'est pas encore relié, rien n\'a été envoyé.');
   done.focus();
   Sound.splash?.();
 });
