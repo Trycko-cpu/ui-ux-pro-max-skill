@@ -805,6 +805,26 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
   floaters.push({ obj: kick, dy: 0, phase: 0.4, tilt: 0.05 });
   clickables.push({ root: kick, station: 'premier-cours' });
   anchors['premier-cours'] = v3(-3.6, 1.15, -3.4);
+  // matériel d'apprentissage au fond du bassin : anneaux et bâtonnets de plongée, frite en mousse en surface
+  {
+    const ringGeo = new THREE.TorusGeometry(0.085, 0.022, 14, 36);
+    [[-1.42, -5.5, COLORS.orange, 0.3], [-0.98, -5.02, COLORS.majorelle, 1.1], [-1.84, -4.86, '#F1EADF', 2.2], [-1.3, -4.42, '#F0B562', 0.7], [-1.7, -5.25, COLORS.majorelle, 2.8]].forEach(([x, z, c, ry]) => {
+      const r = mesh(ringGeo, std(c, { roughness: 0.45 }), x, POOL.floor + 0.022, z);
+      r.rotation.set(Math.PI / 2, 0, ry);
+    });
+    const stickGeo = new THREE.CylinderGeometry(0.02, 0.02, 0.26, 16);
+    const baseGeo = new THREE.CylinderGeometry(0.045, 0.05, 0.03, 20);
+    [[-0.72, -4.66, COLORS.orange], [-0.52, -4.91, COLORS.majorelle], [-0.79, -5.12, '#F0B562']].forEach(([x, z, c]) => {
+      mesh(stickGeo, std(c, { roughness: 0.4 }), x, POOL.floor + 0.16, z);
+      mesh(baseGeo, std('#1A1A24', { roughness: 0.5 }), x, POOL.floor + 0.015, z);
+    });
+    const noodle = new THREE.Group();
+    mesh(new THREE.CylinderGeometry(0.038, 0.038, 1.35, 24), std('#E8804A', { roughness: 0.75 }), 0, 0, 0, noodle).rotation.z = Math.PI / 2;
+    noodle.position.set(-2.0, POOL.water, -5.6);
+    noodle.rotation.y = -0.52; // vue en long depuis le fond, à l'étape « Le premier cours »
+    scene.add(noodle);
+    floaters.push({ obj: noodle, dy: 0.012, phase: 2.1, tilt: 0.04 });
+  }
   scene.add(shadow(mesh(rbox(0.42, 0.06, 0.34, 0.025, 3), std(COLORS.cream, { roughness: 0.95 }), -4.6, 0.03, -4.25)));
 
   /* ---------- 5 · banc + serviettes pliées (Tarifs) ---------- */
@@ -948,9 +968,9 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
       g.fillText('SWIM', 296, h / 2 + 70);
     });
     textures.push(signTex);
-    const sign = mesh(new THREE.PlaneGeometry(4.4, 1.1), new THREE.MeshBasicMaterial({ map: signTex, transparent: true, toneMapped: false }), 0, 5.4, HALL.near - 0.04);
+    const sign = mesh(new THREE.PlaneGeometry(4.4, 1.1), new THREE.MeshBasicMaterial({ map: signTex, transparent: true, toneMapped: false }), 0, 4.35, HALL.near - 0.04);
     sign.rotation.y = Math.PI;
-    const halo = mesh(new THREE.PlaneGeometry(6.4, 2.6), new THREE.MeshBasicMaterial({ map: glowTex, color: '#FF9A50', transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 5.4, HALL.near - 0.03);
+    const halo = mesh(new THREE.PlaneGeometry(6.4, 2.6), new THREE.MeshBasicMaterial({ map: glowTex, color: '#FF9A50', transparent: true, opacity: 0.4, blending: THREE.AdditiveBlending, depthWrite: false }), 0, 4.35, HALL.near - 0.03);
     halo.rotation.y = Math.PI;
   }
   // douche de plage en inox près des plots

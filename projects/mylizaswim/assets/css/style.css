@@ -430,6 +430,12 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .fine { margin-top: 24px; font-size: 13px; line-height: 1.45; color: rgba(255, 255, 255, 0.72); text-align: center; }
 
 /* avis */
+.gallery { margin: 6px 0 18px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
+.gallery-track { display: flex; gap: 8px; width: max-content; animation: gallery 45s linear infinite; }
+.gallery:hover .gallery-track { animation-play-state: paused; }
+.gallery img { height: 150px; width: auto; border-radius: 14px; object-fit: cover; }
+@keyframes gallery { to { transform: translateX(-50%); } }
+@media (prefers-reduced-motion: reduce) { .gallery { overflow-x: auto; } .gallery-track { animation: none; } }
 .feature-quote { margin: 8px 0 22px; }
 .feature-quote p { font-family: var(--font-display); font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -0.03em; }
 .feature-quote footer { margin-top: 10px; font-size: 15px; color: var(--text-2); }

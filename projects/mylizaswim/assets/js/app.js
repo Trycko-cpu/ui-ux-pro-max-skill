@@ -21,9 +21,10 @@ const PRICES = {
   2: { 30: { 1: 45, 10: 405 }, 60: { 1: 80, 10: 720 } },
   3: { 30: { 1: 55, 10: 496 }, 60: { 1: 100, 10: 900 } }, // 496 € : chiffre d'Emmy, à confirmer (495 € suivrait la règle des -10 %)
 };
-// acompte à la piscine ; chez vous, c'est 50 % pour tout le monde (mêmes prix que le cours d'une heure)
-const DEPOSIT = { 1: '50 %', 2: '20 €', 3: '50 %' };
 const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
+// photos des cours : visages des enfants floutés avant publication (voir README)
+// ex. { src: 'assets/img/cours/01.webp', alt: 'Emmy accompagne un enfant dans le petit bain' }
+const PHOTOS = [];
 const DUR = { 30: 'de 30 minutes', 60: 'd\'une heure' };
 const UNIT = { 30: 'les 30 min', 60: 'l\'heure' };
 
@@ -124,6 +125,14 @@ function selectTab(key) {
   if (card) setTimeout(() => card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' }), 350);
 }
 
+// --- bandeau photo de la fiche Avis : défile en boucle (doublé pour une boucle sans couture)
+if (PHOTOS.length) {
+  const gal = $('#gallery');
+  const imgs = PHOTOS.map((p) => `<img src="${p.src}" alt="${p.alt}" loading="lazy" decoding="async">`).join('');
+  $('.gallery-track', gal).innerHTML = imgs + imgs.replace(/alt="[^"]*"/g, 'alt="" aria-hidden="true"');
+  gal.hidden = false;
+}
+
 // --- tarifs : bascule 30 minutes / 1 heure
 let dur = 60;
 function renderPrices(animate = true) {
@@ -132,7 +141,7 @@ function renderPrices(animate = true) {
     const p = PRICES[n][dur];
     return `<div class="pcol"><span class="pdots" aria-hidden="true">${'<i></i>'.repeat(n)}</span><h3>${GROUP[n]}</h3>
       <p class="pwho">${n} personne${n > 1 ? 's' : ''}</p><p class="pbig">${p[1]}<small>€</small></p><p class="punit">${UNIT[dur]}</p>
-      <dl><div><dt>10 leçons</dt><dd>${fmt(p[10])}</dd></div><div><dt>Acompte</dt><dd>${DEPOSIT[n]}</dd></div></dl></div>`;
+      <dl><div><dt>10 leçons</dt><dd>${fmt(p[10])}</dd></div></dl></div>`;
   }).join('');
   $$('#tarifs .toggle button').forEach((b) => b.setAttribute('aria-pressed', String(Number(b.dataset.dur) === dur)));
   if (animate) { cols.classList.remove('is-swap'); void cols.offsetWidth; cols.classList.add('is-swap'); }
