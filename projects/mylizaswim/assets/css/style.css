@@ -439,15 +439,20 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .gallery-track::-webkit-scrollbar { display: none; }
 .gallery img { flex: none; height: 190px; width: auto; max-width: 100%; border-radius: 16px; object-fit: cover; scroll-snap-align: center; }
 .gallery-btn {
-  position: absolute; top: 95px; transform: translateY(-50%); width: 38px; height: 38px; display: grid; place-items: center;
-  border: 0; border-radius: 50%; cursor: pointer; background: rgba(255, 255, 255, 0.92); color: #1D1D1F;
-  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); transition: transform 0.2s var(--ease);
+  position: absolute; top: 95px; transform: translateY(-50%); width: 30px; height: 30px; display: grid; place-items: center;
+  border: 0; border-radius: 50%; cursor: pointer; color: #fff;
+  background: rgba(20, 12, 8, 0.32); -webkit-backdrop-filter: blur(8px); backdrop-filter: blur(8px);
+  opacity: 0.8; transition: transform 0.2s var(--ease), opacity 0.2s, background-color 0.2s;
 }
+/* zone tactile de 44 px autour d'un bouton discret de 30 px */
+.gallery-btn::before { content: ""; position: absolute; inset: -7px; }
+.gallery-btn:hover, .gallery-btn:focus-visible { opacity: 1; background: rgba(20, 12, 8, 0.5); }
 .gallery-btn:active { transform: translateY(-50%) scale(0.92); }
-.gallery-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
-.gallery-prev { left: 8px; }
-.gallery-next { right: 8px; }
-.gallery-count { margin-top: 8px; font-size: 13px; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
+.gallery-btn svg { width: 15px; height: 15px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.gallery-prev { left: 6px; }
+.gallery-next { right: 6px; }
+/* le numéro de la photo n'est plus affiché ; il reste annoncé aux lecteurs d'écran */
+.gallery-count { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 .feature-quote { margin: 8px 0 22px; }
 .feature-quote p { font-family: var(--font-display); font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -0.03em; }
 .feature-quote footer { margin-top: 10px; font-size: 15px; color: var(--text-2); }
