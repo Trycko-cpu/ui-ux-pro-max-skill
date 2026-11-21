@@ -23,12 +23,12 @@ const PRICES = {
 };
 const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
 // photos des cours : visages des enfants floutés avant publication (voir README)
-// ex. { src: 'assets/img/cours/01.webp', alt: 'Emmy accompagne un enfant dans le petit bain' }
 const PHOTOS = [
-  { src: 'assets/img/cours/01.webp', alt: 'Emmy dans l\'eau avec une élève, au bord du bassin' },
-  { src: 'assets/img/cours/02.webp', alt: 'Échauffement en cerceaux avec un groupe d\'enfants' },
-  { src: 'assets/img/cours/03.webp', alt: 'Emmy entourée d\'enfants, tout sourire' },
-  { src: 'assets/img/cours/04.webp', alt: 'Emmy et son groupe d\'enfants en route vers la piscine' },
+  { src: 'assets/img/cours/01.webp', w: 747, h: 420, alt: 'Emmy dans l\'eau avec une élève, au bord du bassin' },
+  { src: 'assets/img/cours/02.webp', w: 336, h: 420, alt: 'Un élève nage le crawl, tracté par un élastique de résistance' },
+  { src: 'assets/img/cours/05.webp', w: 767, h: 420, alt: 'Emmy au bord du bassin, une planche sous le bras' },
+  { src: 'assets/img/cours/04.webp', w: 337, h: 420, alt: 'Emmy et son groupe d\'enfants en route vers la piscine' },
+  { src: 'assets/img/cours/03.webp', w: 375, h: 420, alt: 'Emmy entourée d\'enfants, tout sourire' },
 ];
 const DUR = { 30: 'de 30 minutes', 60: 'd\'une heure' };
 const UNIT = { 30: 'les 30 min', 60: 'l\'heure' };
@@ -134,7 +134,7 @@ function selectTab(key) {
 //     glisser au doigt ; avance seule toutes les 5 s tant que personne n'y touche
 if (PHOTOS.length) {
   const gal = $('#gallery'), track = $('.gallery-track', gal), count = $('.gallery-count', gal);
-  track.innerHTML = PHOTOS.map((p) => `<img src="${p.src}" alt="${p.alt}" loading="lazy" decoding="async">`).join('');
+  track.innerHTML = PHOTOS.map((p) => `<img src="${p.src}" alt="${p.alt}" width="${p.w}" height="${p.h}" loading="lazy" decoding="async">`).join('');
   gal.hidden = false;
   const imgs = $$('img', track);
   const current = () => {

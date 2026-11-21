@@ -961,11 +961,18 @@ export function createWorld(renderer, { quality = 'high' } = {}) {
         g.fillStyle = 'rgba(255,255,255,0.95)'; g.beginPath(); g.arc(150, h / 2, 92, 0, Math.PI * 2); g.fill();
         g.drawImage(logoImg, 52, h / 2 - 98, 196, 196);
       }
+      // l'espacement des lettres reste sur le contexte d'un dessin à l'autre : on le remet à zéro
+      const spacing = 'letterSpacing' in g;
       g.fillStyle = '#FFE6CC'; g.font = `700 112px ${FONT}`; g.textBaseline = 'middle';
+      if (spacing) g.letterSpacing = '0px';
+      const mw = g.measureText('MYLIZA').width;
       g.fillText('MYLIZA', 290, h / 2 - 12);
+      // SWIM centré sous MYLIZA (l'espacement après la dernière lettre ne compte pas)
       g.fillStyle = COLORS.amber; g.font = `500 34px ${FONT}`;
-      if ('letterSpacing' in g) g.letterSpacing = '18px';
-      g.fillText('SWIM', 296, h / 2 + 70);
+      if (spacing) g.letterSpacing = '18px';
+      const sw = g.measureText('SWIM').width - (spacing ? 18 : 0);
+      g.fillText('SWIM', 290 + (mw - sw) / 2, h / 2 + 70);
+      if (spacing) g.letterSpacing = '0px';
     });
     textures.push(signTex);
     const sign = mesh(new THREE.PlaneGeometry(4.4, 1.1), new THREE.MeshBasicMaterial({ map: signTex, transparent: true, toneMapped: false }), 0, 4.35, HALL.near - 0.04);

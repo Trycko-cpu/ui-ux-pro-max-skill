@@ -56,7 +56,7 @@ Les textes, tarifs, avis, FAQ et la photo d'Emmy viennent de l'ancienne version 
 - [ ] **Numéro WhatsApp** d'Emmy : `CONFIG.whatsapp` (affiche le lien « Ou écrire directement sur WhatsApp » avec la demande déjà rédigée).
 - [ ] **Confirmer les tarifs** (`PRICES`, `DEPOSIT`) : forfait trio 10 × 30 min à 496 € (495 € suivrait la règle des -10 % des autres forfaits) ; acompte lu comme « 50 % du prix, sauf duo à la piscine : 20 € » ; cours chez vous = mêmes prix que l'heure, 1 h uniquement, chez les clients qui ont une piscine ; déplacement hors Bruxelles 10 € par km (aller simple ? à chaque cours, forfait compris ?)
 - [ ] **Confirmer que les avis sont réels** et que les familles sont d'accord pour être citées.
-- [ ] **Accord écrit des parents** pour les 4 photos du bandeau de la fiche Avis (`assets/img/cours/`, visages des enfants floutés et vérifiés un par un). La photo du vestiaire n'a pas été retenue.
+- [ ] **Accord écrit des parents** pour les photos du bandeau de la fiche Avis (`assets/img/cours/`) : visages des enfants floutés et vérifiés un par un, sauf les enfants de l'ascenseur déjà masqués par un cœur. La photo du vestiaire n'a pas été retenue.
 - [ ] Mentions légales + politique de confidentialité.
 - [ ] Logo vectoriel d'origine (l'actuel a été vectorisé depuis une image).
 
