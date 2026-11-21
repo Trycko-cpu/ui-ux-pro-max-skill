@@ -218,7 +218,12 @@
         <section class="panel panel-orange" id="avis" aria-labelledby="avis-title">
           <p class="eyebrow">Avis</p>
           <h2 id="avis-title">Ce que les parents m'écrivent.</h2>
-          <div class="gallery" id="gallery" hidden><div class="gallery-track"></div></div>
+          <div class="gallery" id="gallery" hidden>
+            <div class="gallery-track" tabindex="0" aria-label="Photos des cours, à faire défiler"></div>
+            <button class="gallery-btn gallery-prev" type="button" aria-label="Photo précédente"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg></button>
+            <button class="gallery-btn gallery-next" type="button" aria-label="Photo suivante"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg></button>
+            <p class="gallery-count" aria-live="polite"></p>
+          </div>
           <div class="quotes" tabindex="0" aria-label="Messages de parents, à faire défiler">
             <figure><blockquote>« Il a adoré et il n'a plus peur à la plage ! »</blockquote><figcaption>Les parents d'A.</figcaption></figure>
             <figure><blockquote>« Merci Emmy pour cette belle année ! Il sait maintenant nager, belle prouesse ! »</blockquote><figcaption>Parent de B.</figcaption></figure>

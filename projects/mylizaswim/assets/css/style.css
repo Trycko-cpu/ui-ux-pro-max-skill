@@ -430,12 +430,24 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .fine { margin-top: 24px; font-size: 13px; line-height: 1.45; color: rgba(255, 255, 255, 0.72); text-align: center; }
 
 /* avis */
-.gallery { margin: 6px 0 18px; overflow: hidden; -webkit-mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); mask-image: linear-gradient(90deg, transparent, #000 6%, #000 94%, transparent); }
-.gallery-track { display: flex; gap: 8px; width: max-content; animation: gallery 45s linear infinite; }
-.gallery:hover .gallery-track { animation-play-state: paused; }
-.gallery img { height: 150px; width: auto; border-radius: 14px; object-fit: cover; }
-@keyframes gallery { to { transform: translateX(-50%); } }
-@media (prefers-reduced-motion: reduce) { .gallery { overflow-x: auto; } .gallery-track { animation: none; } }
+/* bandeau photo : une photo à la fois, glisser au doigt ou boutons précédent / suivant */
+.gallery { position: relative; margin: 6px 0 18px; }
+.gallery-track {
+  display: flex; gap: 8px; overflow-x: auto; scroll-snap-type: x mandatory; scroll-behavior: smooth;
+  scrollbar-width: none; border-radius: 16px; touch-action: pan-x pan-y; overscroll-behavior-x: contain;
+}
+.gallery-track::-webkit-scrollbar { display: none; }
+.gallery img { flex: none; height: 190px; width: auto; max-width: 100%; border-radius: 16px; object-fit: cover; scroll-snap-align: center; }
+.gallery-btn {
+  position: absolute; top: 95px; transform: translateY(-50%); width: 38px; height: 38px; display: grid; place-items: center;
+  border: 0; border-radius: 50%; cursor: pointer; background: rgba(255, 255, 255, 0.92); color: #1D1D1F;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25); transition: transform 0.2s var(--ease);
+}
+.gallery-btn:active { transform: translateY(-50%) scale(0.92); }
+.gallery-btn svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 2.4; stroke-linecap: round; stroke-linejoin: round; }
+.gallery-prev { left: 8px; }
+.gallery-next { right: 8px; }
+.gallery-count { margin-top: 8px; font-size: 13px; color: var(--text-3); text-align: center; font-variant-numeric: tabular-nums; }
 .feature-quote { margin: 8px 0 22px; }
 .feature-quote p { font-family: var(--font-display); font-size: 26px; line-height: 1.2; font-weight: 600; letter-spacing: -0.03em; }
 .feature-quote footer { margin-top: 10px; font-size: 15px; color: var(--text-2); }

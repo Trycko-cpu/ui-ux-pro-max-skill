@@ -130,12 +130,45 @@ function selectTab(key) {
   if (card) setTimeout(() => card.scrollIntoView({ behavior: reduceMotion ? 'auto' : 'smooth', block: 'nearest' }), 350);
 }
 
-// --- bandeau photo de la fiche Avis : défile en boucle (doublé pour une boucle sans couture)
+// --- bandeau photo de la fiche Avis : une photo à la fois, boutons précédent / suivant,
+//     glisser au doigt ; avance seule toutes les 5 s tant que personne n'y touche
 if (PHOTOS.length) {
-  const gal = $('#gallery');
-  const imgs = PHOTOS.map((p) => `<img src="${p.src}" alt="${p.alt}" loading="lazy" decoding="async">`).join('');
-  $('.gallery-track', gal).innerHTML = imgs + imgs.replace(/alt="[^"]*"/g, 'alt="" aria-hidden="true"');
+  const gal = $('#gallery'), track = $('.gallery-track', gal), count = $('.gallery-count', gal);
+  track.innerHTML = PHOTOS.map((p) => `<img src="${p.src}" alt="${p.alt}" loading="lazy" decoding="async">`).join('');
   gal.hidden = false;
+  const imgs = $$('img', track);
+  const current = () => {
+    const mid = track.scrollLeft + track.clientWidth / 2;
+    let best = 0, d = Infinity;
+    imgs.forEach((im, i) => { const c = im.offsetLeft + im.offsetWidth / 2, dd = Math.abs(c - mid); if (dd < d) { d = dd; best = i; } });
+    return best;
+  };
+  const show = (i) => {
+    const im = imgs[(i + imgs.length) % imgs.length];
+    track.scrollTo({ left: im.offsetLeft - (track.clientWidth - im.offsetWidth) / 2, behavior: reduceMotion ? 'auto' : 'smooth' });
+  };
+  // la photo affichée est retenue (et non déduite pendant l'animation) ; recalée quand le doigt la change
+  let idx = 0, settle = 0, touched = false;
+  const label = () => { count.textContent = `${idx + 1} / ${imgs.length}`; };
+  const go = (i) => { idx = (i + imgs.length) % imgs.length; show(idx); label(); };
+  const stop = () => { touched = true; };
+  $('.gallery-prev', gal).addEventListener('click', () => { stop(); go(idx - 1); });
+  $('.gallery-next', gal).addEventListener('click', () => { stop(); go(idx + 1); });
+  ['pointerdown', 'wheel', 'keydown'].forEach((ev) => track.addEventListener(ev, stop, { passive: true }));
+  track.addEventListener('scroll', () => {
+    clearTimeout(settle);
+    settle = setTimeout(() => { idx = current(); label(); }, 180);
+  }, { passive: true });
+  label();
+  if (!reduceMotion) {
+    setInterval(() => {
+      // seulement si le bandeau est à l'écran et que personne ne l'a touché
+      if (touched || document.hidden || !gal.offsetParent) return;
+      const r = gal.getBoundingClientRect();
+      if (r.bottom < 0 || r.top > innerHeight) return;
+      go(idx + 1);
+    }, 5000);
+  }
 }
 
 // --- tarifs : bascule 30 minutes / 1 heure
