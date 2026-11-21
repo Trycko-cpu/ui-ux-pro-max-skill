@@ -487,7 +487,9 @@ html.js:not(.classic) .panel.is-active > *:nth-child(n+4) { animation-delay: 0.1
 .chips button:disabled { opacity: 0.35; cursor: not-allowed; }
 .chips-hint { margin-top: 8px; font-size: 13px; color: var(--text-2); }
 .book-sum { display: flex; align-items: center; justify-content: space-between; gap: 12px; padding: 14px 18px; border-radius: 16px; background: var(--tile); }
-.book-sum span { font-size: 15px; color: var(--text-2); }
+.book-sum > span { font-size: 15px; color: var(--text-2); }
+.book-sum .star { margin-left: 2px; font-size: 0.6em; vertical-align: super; line-height: 0; color: var(--text-2); }
+.book-note { margin-top: -10px; font-size: 13px; color: var(--text-2); }
 .book-sum strong { flex: none; white-space: nowrap; font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: -0.035em; font-variant-numeric: tabular-nums; }
 .field { display: flex; flex-direction: column; gap: 6px; }
 .field label { font-size: 13px; font-weight: 600; color: var(--text-2); }

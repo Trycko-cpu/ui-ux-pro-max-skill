@@ -26,9 +26,8 @@ const GROUP = { 1: 'Solo', 2: 'Duo', 3: 'Trio' };
 const PHOTOS = [
   { src: 'assets/img/cours/01.webp', w: 747, h: 420, alt: 'Emmy dans l\'eau avec une élève, au bord du bassin' },
   { src: 'assets/img/cours/02.webp', w: 336, h: 420, alt: 'Un élève nage le crawl, tracté par un élastique de résistance' },
-  { src: 'assets/img/cours/05.webp', w: 767, h: 420, alt: 'Emmy au bord du bassin, une planche sous le bras' },
+  { src: 'assets/img/cours/05.webp', w: 236, h: 420, alt: 'Emmy au bord du bassin, une planche sous le bras' },
   { src: 'assets/img/cours/04.webp', w: 337, h: 420, alt: 'Emmy et son groupe d\'enfants en route vers la piscine' },
-  { src: 'assets/img/cours/03.webp', w: 375, h: 420, alt: 'Emmy entourée d\'enfants, tout sourire' },
 ];
 const DUR = { 30: 'de 30 minutes', 60: 'd\'une heure' };
 const UNIT = { 30: 'les 30 min', 60: 'l\'heure' };
